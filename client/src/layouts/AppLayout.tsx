@@ -6,6 +6,7 @@ import {
   FolderOpen, 
   CalendarMonth, 
   Dashboard as DashboardIcon,
+  FolderCopy,
   SmartToy,
   Settings as SettingsIcon,
   Logout,
@@ -23,9 +24,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Backlog', icon: <FolderOpen />, path: '/projects/:id/backlog' },
-  { label: 'Active Sprint', icon: <ViewKanban />, path: '/projects/:id/board' },
+  { label: 'Active Sprint', icon: <ViewKanban />, path: '/projects/:id/sprint' },
   { label: 'Sprints', icon: <CalendarMonth />, path: '/projects/:id/sprints' },
   { label: 'Board', icon: <DashboardIcon />, path: '/projects/:id/board' },
+  { label: 'Projects', icon: <FolderCopy />, path: '/projects' },
   { label: 'AI Assistant', icon: <SmartToy />, path: '/projects/:id/ai' },
   { label: 'Settings', icon: <SettingsIcon />, path: '/projects/:id/settings' },
 ];
@@ -50,8 +52,16 @@ export default function AppLayout() {
   };
 
   const isActive = (path: string) => {
-    const pathPart = path.split('/:id/')[1] || '';
-    return location.pathname.includes(pathPart);
+    // Exact match for /projects
+    if (path === '/projects') {
+      return location.pathname === '/projects';
+    }
+    // For other paths, check if the route section matches
+    const pathPart = path.split('/:id/')[1];
+    if (pathPart) {
+      return location.pathname.includes(pathPart);
+    }
+    return false;
   };
 
   return (
@@ -105,45 +115,55 @@ export default function AppLayout() {
 
           {/* Navigation */}
           <List sx={{ flex: 1, px: 2, py: 2 }}>
-            {navItems.map((item) => (
-              <ListItemButton
-                key={item.label}
-                selected={isActive(item.path)}
-                onClick={() => {
-                  console.log(`Navigate to ${item.label}`);
-                }}
-                sx={{
-                  borderRadius: 1.5,
-                  mb: 0.5,
-                  '&.Mui-selected': {
-                    bgcolor: '#EAF0FF',
-                    color: 'primary.main',
-                    '& .MuiListItemIcon-root': {
+            {navItems.map((item) => {
+              const selected = isActive(item.path);
+              return (
+                <ListItemButton
+                  key={item.label}
+                  selected={selected}
+                  onClick={() => {
+                    navigate(item.path.replace(':id', '1')); // TODO: Replace with actual project ID
+                  }}
+                  sx={{
+                    borderRadius: 1.5,
+                    mb: 0.5,
+                    color: selected ? 'primary.main' : 'text.secondary',
+                    bgcolor: 'transparent',
+                    '&.Mui-selected': {
+                      bgcolor: '#EAF0FF',
                       color: 'primary.main',
+                      '& .MuiListItemIcon-root': {
+                        color: 'primary.main',
+                      },
+                      '&:hover': {
+                        bgcolor: '#E0E7FF',
+                      },
                     },
                     '&:hover': {
-                      bgcolor: '#EAF0FF',
+                      bgcolor: 'rgba(0, 0, 0, 0.04)',
                     },
-                  },
-                  '&:hover': {
-                    bgcolor: 'action.hover',
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 40, color: 'text.secondary' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText 
-                  primary={item.label}
-                  slotProps={{
-                    primary: {
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                    } as any,
                   }}
-                />
-              </ListItemButton>
-            ))}
+                >
+                  <ListItemIcon 
+                    sx={{ 
+                      minWidth: 40, 
+                      color: selected ? 'primary.main' : 'text.secondary',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.label}
+                    slotProps={{
+                      primary: {
+                        fontSize: '0.875rem',
+                        fontWeight: selected ? 600 : 500,
+                      } as unknown as object,
+                    }}
+                  />
+                </ListItemButton>
+              );
+            })}
           </List>
 
           <Divider />
@@ -246,3 +266,4 @@ export default function AppLayout() {
     </Box>
   );
 }
+

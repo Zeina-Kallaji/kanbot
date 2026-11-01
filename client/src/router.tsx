@@ -58,6 +58,10 @@ export const router = createBrowserRouter([
             element: <div>Backlog (Day 3)</div>,
           },
           {
+            path: '/projects/:projectId/sprint',
+            element: <div>Active Sprint (Day 4)</div>,
+          },
+          {
             path: '/projects/:projectId/board',
             element: <div>Board (Day 5)</div>,
           },
