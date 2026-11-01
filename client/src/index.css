@@ -1,0 +1,201 @@
+/**
+ * Kanbot Global Styles
+ * 
+ * Global CSS reset, font loading, and base styling for the application.
+ * Most styling is handled by the MUI theme (src/theme/theme.ts).
+ */
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Font Loading: Inter from Google Fonts */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* CSS Reset & Base Styles */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #F6F8FC;
+  color: #202B3C;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Root Container */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Typography Defaults */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #202B3C;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: #3156A3;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #294A91;
+  text-decoration: underline;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Button Reset (MUI handles all button styling) */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Focus Visible (Accessibility) */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+*:focus-visible {
+  outline: 2px solid #3156A3;
+  outline-offset: 2px;
+}
+
+/* Remove outline for mouse users, keep for keyboard users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Custom Scrollbar (Webkit browsers) */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F6F8FC;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D5DCE8;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #98A2B3;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Selection */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+::selection {
+  background-color: #EAF0FF;
+  color: #202B3C;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Disabled Elements */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+[disabled] {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Screen Reader Only (Accessibility) */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Skip to Main Content Link (Accessibility) */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #3156A3;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 10000;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Utility Classes */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
