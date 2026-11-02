@@ -7,6 +7,7 @@ import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import ProjectsPage from './features/projects/ProjectsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import BacklogPage from './features/backlog/BacklogPage';
 
 /**
  * Application Router
@@ -54,9 +55,9 @@ export const router = createBrowserRouter([
           },
           // Placeholder routes for Day 2+
           {
-            path: '/projects/:projectId/backlog',
-            element: <div>Backlog (Day 3)</div>,
-          },
+           path: '/projects/:projectId/backlog',
+           element: <BacklogPage />,
+},
           {
             path: '/projects/:projectId/sprint',
             element: <div>Active Sprint (Day 4)</div>,
