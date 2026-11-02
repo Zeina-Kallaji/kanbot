@@ -56,10 +56,14 @@ export default function AppLayout() {
     if (path === '/projects') {
       return location.pathname === '/projects';
     }
-    // For other paths, check if the route section matches
+    // For other paths, extract the route section and do exact match
     const pathPart = path.split('/:id/')[1];
     if (pathPart) {
-      return location.pathname.includes(pathPart);
+      // Extract the corresponding part from the current location
+      const locationParts = location.pathname.split('/');
+      // Path structure: /projects/:id/:section
+      const currentSection = locationParts[3]; // Index 3 is the section after /projects/:id/
+      return currentSection === pathPart;
     }
     return false;
   };
@@ -266,4 +270,5 @@ export default function AppLayout() {
     </Box>
   );
 }
+
 

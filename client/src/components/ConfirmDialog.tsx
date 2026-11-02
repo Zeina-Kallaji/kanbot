@@ -1,76 +1,53 @@
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  Button, 
-  Typography 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
 } from '@mui/material';
-import type { ReactNode } from 'react';
 
-interface ConfirmDialogProps {
+interface Props {
   open: boolean;
+  title: string;
+  description: string;
+  confirmText?: string;
+  loading?: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  title: string;
-  message: string | ReactNode;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  confirmColor?: 'primary' | 'error' | 'warning';
-  loading?: boolean;
 }
 
-/**
- * ConfirmDialog Component
- * 
- * A reusable confirmation dialog for destructive or important actions.
- * Supports custom labels, colors, and loading states.
- */
 export default function ConfirmDialog({
   open,
+  title,
+  description,
+  confirmText = 'Confirm',
+  loading = false,
   onClose,
   onConfirm,
-  title,
-  message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
-  confirmColor = 'primary',
-  loading = false,
-}: ConfirmDialogProps) {
+}: Props) {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      aria-labelledby="confirm-dialog-title"
-    >
-      <DialogTitle id="confirm-dialog-title">
-        {title}
-      </DialogTitle>
-      
+    <Dialog open={open} onClose={loading ? undefined : onClose}>
+      <DialogTitle>{title}</DialogTitle>
+
       <DialogContent>
-        {typeof message === 'string' ? (
-          <Typography variant="body2" color="text.secondary">
-            {message}
-          </Typography>
-        ) : (
-          message
-        )}
+        <Typography color="text.secondary">
+          {description}
+        </Typography>
       </DialogContent>
-      
-      <DialogActions>
+
+      <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} disabled={loading}>
-          {cancelLabel}
+          Cancel
         </Button>
+
         <Button
-          onClick={onConfirm}
+          color="error"
           variant="contained"
-          color={confirmColor}
+          onClick={onConfirm}
           disabled={loading}
-          autoFocus
         >
-          {confirmLabel}
+          {loading ? 'Deleting...' : confirmText}
         </Button>
       </DialogActions>
     </Dialog>
