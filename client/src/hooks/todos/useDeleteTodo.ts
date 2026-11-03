@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { deleteTodo } from '../../api/todos';
 import { todoKeys } from './todoKeys';
+import { sprintKeys } from '../sprints/sprintKeys';
 
 interface DeleteTodoVariables {
   todoId: string;
@@ -18,7 +19,11 @@ export function useDeleteTodo() {
 
     onSuccess: async (_, variables) => {
       await queryClient.invalidateQueries({
-        queryKey: todoKeys.lists(),
+        queryKey: todoKeys.projectLists(variables.projectId),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: sprintKeys.list(variables.projectId),
       });
 
       await queryClient.invalidateQueries({

@@ -1,12 +1,12 @@
 // client/src/features/backlog/components/TodoFilters.tsx
 
 import {
-  Box,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   TextField,
+  Stack,
 } from '@mui/material';
 
 import type {
@@ -33,26 +33,23 @@ export default function TodoFilters({
   onTypeChange,
 }: TodoFiltersProps) {
   return (
-    <Box
+    <Stack
+      direction={{ xs: 'column', md: 'row' }}
       sx={{
-        display: 'grid',
-        gridTemplateColumns: {
-          xs: '1fr',
-          sm: 'minmax(200px, 2fr) 1fr 1fr',
-        },
-        gap: 2,
-        mb: 3,
+        gap: 1.5,
+        flex: 1,
+        minWidth: 0,
       }}
     >
       <TextField
-        fullWidth
+        sx={{ flex: 1, minWidth: { md: 200 } }}
         size="small"
         placeholder="Search todos..."
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
       />
 
-      <FormControl fullWidth size="small">
+      <FormControl sx={{ minWidth: { xs: '100%', md: 150 } }} size="small">
         <InputLabel>Priority</InputLabel>
 
         <Select
@@ -70,7 +67,7 @@ export default function TodoFilters({
         </Select>
       </FormControl>
 
-      <FormControl fullWidth size="small">
+      <FormControl sx={{ minWidth: { xs: '100%', md: 130 } }} size="small">
         <InputLabel>Type</InputLabel>
 
         <Select
@@ -86,6 +83,6 @@ export default function TodoFilters({
           <MenuItem value="bug">Bug</MenuItem>
         </Select>
       </FormControl>
-    </Box>
+    </Stack>
   );
 }

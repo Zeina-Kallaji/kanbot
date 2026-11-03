@@ -16,15 +16,23 @@ import {
 import {
   MoreVertOutlined,
   EditOutlined,
-  DeleteOutlined,
   DriveFileMoveOutlined,
+  DragIndicatorOutlined,
 } from '@mui/icons-material';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import type { Todo } from '../../../types/api';
+import type { Sprint } from '../../../types/api';
 
 interface BacklogItemProps {
   todo: Todo;
   onClick: (todo: Todo) => void;
+  listId: string;
+  isDraggable: boolean;
+  sprints: Sprint[];
+  onMove: (todo: Todo, sprintId: string | null) => void;
+  compact: boolean;
 }
 
 const priorityColors = {
@@ -37,9 +45,26 @@ const priorityColors = {
 export default function BacklogItem({
   todo,
   onClick,
+  listId,
+  isDraggable,
+  sprints,
+  onMove,
+  compact,
 }: BacklogItemProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: todo.id,
+    disabled: !isDraggable,
+    data: { listId, todo },
+  });
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -56,20 +81,9 @@ export default function BacklogItem({
     onClick(todo);
   };
 
-  const handleDelete = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    handleMenuClose();
-    // Delete functionality to be connected later
-  };
-
-  const handleMove = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    handleMenuClose();
-    // Move functionality to be connected later
-  };
-
   return (
     <Paper
+      ref={setNodeRef}
       variant="outlined"
       role="button"
       tabIndex={0}
@@ -81,10 +95,19 @@ export default function BacklogItem({
         }
       }}
       sx={{
-        p: 2,
-        borderRadius: 2,
+        transform: CSS.Transform.toString(transform),
+        opacity: isDragging ? 0.45 : 1,
+        p: compact ? { xs: 1, md: 0.75 } : 2,
+        borderRadius: compact ? 0 : 2,
+        borderLeft: compact ? 0 : undefined,
+        borderRight: compact ? 0 : undefined,
+        borderTop: compact ? 0 : undefined,
+        borderBottom: compact ? 1 : undefined,
+        borderColor: compact ? 'divider' : undefined,
         cursor: 'pointer',
-        transition: 'border-color 0.2s, background-color 0.2s',
+        transition: transition
+          ? `${transition}, border-color 0.2s, background-color 0.2s`
+          : 'border-color 0.2s, background-color 0.2s',
         '&:hover': {
           borderColor: 'primary.main',
           bgcolor: 'action.hover',
@@ -96,23 +119,35 @@ export default function BacklogItem({
       }}
     >
       <Stack
-        direction="row"
-        spacing={2}
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={compact ? 1 : 2}
         sx={{
-          alignItems: 'center',
+          alignItems: { xs: 'stretch', md: 'center' },
           justifyContent: 'space-between',
         }}
       >
         {/* Label and Title */}
         <Stack
           direction="row"
-          spacing={1.5}
+          spacing={compact ? 1 : 1.5}
           sx={{
             alignItems: 'center',
             flex: 1,
             minWidth: 0,
+            flexWrap: { xs: 'wrap', md: 'nowrap' },
           }}
         >
+          <IconButton
+            size="small"
+            aria-label={`Drag ${todo.key}`}
+            disabled={!isDraggable}
+            {...attributes}
+            {...listeners}
+            onClick={(event) => event.stopPropagation()}
+            sx={{ cursor: isDraggable ? 'grab' : 'default', flexShrink: 0 }}
+          >
+            <DragIndicatorOutlined fontSize="small" />
+          </IconButton>
           <Typography
             variant="body2"
             color="text.secondary"
@@ -125,18 +160,25 @@ export default function BacklogItem({
             {todo.key}
           </Typography>
 
-          <Typography
-            sx={{
-              fontWeight: 600,
-              flex: 1,
-              minWidth: 0,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {todo.title}
-          </Typography>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              sx={{
+                fontWeight: 600,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {todo.title}
+            </Typography>
+            {todo.labels.length > 0 && (
+              <Stack direction="row" spacing={0.5} sx={{ mt: 0.5, flexWrap: 'wrap' }}>
+                {todo.labels.map((label) => (
+                  <Chip key={label} size="small" label={label} variant="outlined" />
+                ))}
+              </Stack>
+            )}
+          </Box>
         </Stack>
 
         {/* Type, Priority, Points chips */}
@@ -195,15 +237,33 @@ export default function BacklogItem({
               Edit
             </MenuItem>
 
-            <MenuItem onClick={handleMove}>
+            <MenuItem disabled>
               <DriveFileMoveOutlined sx={{ mr: 1, fontSize: '1.25rem' }} />
-              Move to sprint
+              Move to
             </MenuItem>
-
-            <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-              <DeleteOutlined sx={{ mr: 1, fontSize: '1.25rem' }} />
-              Delete
+            <MenuItem
+              disabled={todo.sprintId === null}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleMenuClose();
+                onMove(todo, null);
+              }}
+            >
+              Backlog
             </MenuItem>
+            {sprints.map((sprint) => (
+              <MenuItem
+                key={sprint.id}
+                disabled={todo.sprintId === sprint.id}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleMenuClose();
+                  onMove(todo, sprint.id);
+                }}
+              >
+                {sprint.name}
+              </MenuItem>
+            ))}
           </Menu>
         </Box>
       </Stack>

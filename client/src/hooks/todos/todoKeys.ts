@@ -4,6 +4,9 @@ export const todoKeys = {
 
   lists: () => [...todoKeys.all, 'list'] as const,
 
+  projectLists: (projectId: string) =>
+    [...todoKeys.lists(), projectId] as const,
+
   list: (
     projectId: string,
     filters: {

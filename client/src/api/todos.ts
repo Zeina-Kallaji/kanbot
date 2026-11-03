@@ -6,6 +6,7 @@ import type {
   TodoListQuery,
   CreateTodoRequest,
   UpdateTodoRequest,
+  MoveTodoRequest,
 } from '../types/api';
 
 interface TodosResponse {
@@ -100,6 +101,18 @@ export function updateTodo(
 ): Promise<TodoResponse> {
   return requireResponse(
     request<TodoResponse>('PATCH', `/todos/${todoId}`, data)
+  );
+}
+
+/**
+ * Move or reorder a todo between the backlog and a sprint.
+ */
+export function moveTodo(
+  todoId: string,
+  data: MoveTodoRequest
+): Promise<TodoResponse> {
+  return requireResponse(
+    request<TodoResponse>('POST', `/todos/${todoId}/move`, data)
   );
 }
 

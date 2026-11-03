@@ -15,6 +15,8 @@ import {
   MenuItem,
   Select,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
@@ -26,7 +28,8 @@ import {
   SmartToy,
   Settings as SettingsIcon,
   Logout,
-  ExpandMore
+  ExpandMore,
+  MenuOutlined,
 } from '@mui/icons-material';
 import { useAuth } from '../features/auth/AuthContext';
 import { useProjects } from '../hooks/projects/useProjects';
@@ -54,6 +57,9 @@ export default function AppLayout() {
   const location = useLocation();
   const { projectId } = useParams<{ projectId: string }>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {
     data,
     isLoading: isProjectsLoading,
@@ -66,6 +72,11 @@ export default function AppLayout() {
   )
     ? projectId
     : '';
+
+  const navigateAndCloseSidebar = (path: string) => {
+    navigate(path);
+    setMobileSidebarOpen(false);
+  };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -98,13 +109,16 @@ export default function AppLayout() {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       {/* Sidebar */}
       <Drawer
-        variant="permanent"
+        variant={isMobile ? 'temporary' : 'permanent'}
+        open={isMobile ? mobileSidebarOpen : undefined}
+        onClose={() => setMobileSidebarOpen(false)}
         sx={{
           width: SIDEBAR_WIDTH,
           flexShrink: 0,
+          display: { xs: 'block', md: 'block' },
           '& .MuiDrawer-paper': {
             width: SIDEBAR_WIDTH,
             boxSizing: 'border-box',
@@ -124,7 +138,7 @@ export default function AppLayout() {
               gap: 1.5,
               cursor: 'pointer',
             }}
-            onClick={() => navigate('/projects')}
+            onClick={() => navigateAndCloseSidebar('/projects')}
           >
             <Box
               component="img"
@@ -158,7 +172,7 @@ export default function AppLayout() {
                 onChange={(event) => {
                   const selectedId = event.target.value;
                   if (projects.some((project) => project.id === selectedId)) {
-                    navigate(`/projects/${selectedId}/backlog`);
+                    navigateAndCloseSidebar(`/projects/${selectedId}/backlog`);
                   }
                 }}
                 renderValue={(selected) => {
@@ -231,7 +245,7 @@ export default function AppLayout() {
                   selected={selected}
                   disabled={isProjectRoute && !projectId}
                   onClick={() => {
-                    navigate(item.path.replace(':id', projectId ?? ''));
+                    navigateAndCloseSidebar(item.path.replace(':id', projectId ?? ''));
                   }}
                   sx={{
                     borderRadius: 1.5,
@@ -315,7 +329,7 @@ export default function AppLayout() {
                 <ListItemButton
                   key={project.id}
                   selected={project.id === projectId}
-                  onClick={() => navigate(`/projects/${project.id}/backlog`)}
+                  onClick={() => navigateAndCloseSidebar(`/projects/${project.id}/backlog`)}
                   title={project.name}
                   sx={{
                     minWidth: 0,
@@ -354,7 +368,7 @@ export default function AppLayout() {
 
             <ListItemButton
               selected={location.pathname === '/projects'}
-              onClick={() => navigate('/projects')}
+              onClick={() => navigateAndCloseSidebar('/projects')}
               sx={{
                 mt: 0.5,
                 borderRadius: 1.5,
@@ -465,10 +479,36 @@ export default function AppLayout() {
         component="main"
         sx={{
           flexGrow: 1,
+          minWidth: 0,
           bgcolor: 'background.default',
           minHeight: '100vh',
         }}
       >
+        {isMobile && (
+          <Box
+            component="header"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              height: 56,
+              px: 1.5,
+              bgcolor: 'background.paper',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <IconButton
+              aria-label="Open navigation"
+              onClick={() => setMobileSidebarOpen(true)}
+              edge="start"
+            >
+              <MenuOutlined />
+            </IconButton>
+            <Typography variant="h3" sx={{ ml: 1, color: 'primary.main' }}>
+              Kanbot
+            </Typography>
+          </Box>
+        )}
         <Outlet />
       </Box>
     </Box>

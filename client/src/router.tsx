@@ -8,6 +8,7 @@ import RegisterPage from './features/auth/RegisterPage';
 import ProjectsPage from './features/projects/ProjectsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import BacklogPage from './features/backlog/BacklogPage';
+import BoardPage from './features/board/BoardPage';
 
 /**
  * Application Router
@@ -64,7 +65,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/projects/:projectId/board',
-            element: <div>Board (Day 5)</div>,
+            element: <BoardPage />,
           },
           {
             path: '/projects/:projectId/sprints',

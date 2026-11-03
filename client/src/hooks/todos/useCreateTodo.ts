@@ -17,9 +17,9 @@ export function useCreateTodo() {
    mutationFn: ({ projectId, data }: CreateTodoVariables) =>
   createTodo(projectId, data),
    
-    onSuccess: async () => {
+    onSuccess: async (_, variables) => {
   await queryClient.invalidateQueries({
-    queryKey: todoKeys.lists(),
+    queryKey: todoKeys.projectLists(variables.projectId),
   });
 
   await queryClient.invalidateQueries({

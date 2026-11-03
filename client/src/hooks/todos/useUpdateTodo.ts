@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { updateTodo } from '../../api/todos';
 import { todoKeys } from './todoKeys';
+import { sprintKeys } from '../sprints/sprintKeys';
 
 import type { UpdateTodoRequest } from '../../types/api';
 
@@ -21,7 +22,11 @@ export function useUpdateTodo() {
 
     onSuccess: async (_, variables) => {
       await queryClient.invalidateQueries({
-        queryKey: todoKeys.lists(),
+        queryKey: todoKeys.projectLists(variables.projectId),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: sprintKeys.list(variables.projectId),
       });
 
       await queryClient.invalidateQueries({
