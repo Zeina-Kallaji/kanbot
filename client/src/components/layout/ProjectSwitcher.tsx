@@ -25,7 +25,6 @@ export default function ProjectSwitcher() {
         disabled={isLoading || projects.length === 0}
         onChange={(event) => {
           const selectedId = event.target.value;
-
           navigate(`/projects/${selectedId}/backlog`);
         }}
         renderValue={(selected) => {

@@ -1,11 +1,27 @@
-import { Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Avatar, Typography, IconButton, Menu, MenuItem, Divider } from '@mui/material';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Divider,
+  Drawer,
+  FormControl,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
 import { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { 
   ViewKanban, 
   FolderOpen, 
   CalendarMonth, 
-  Dashboard as DashboardIcon,
   FolderCopy,
   SmartToy,
   Settings as SettingsIcon,
@@ -13,6 +29,8 @@ import {
   ExpandMore
 } from '@mui/icons-material';
 import { useAuth } from '../features/auth/AuthContext';
+import { useProjects } from '../hooks/projects/useProjects';
+import { colors } from '../theme/theme';
 
 const SIDEBAR_WIDTH = 240;
 
@@ -26,8 +44,6 @@ const navItems: NavItem[] = [
   { label: 'Backlog', icon: <FolderOpen />, path: '/projects/:id/backlog' },
   { label: 'Active Sprint', icon: <ViewKanban />, path: '/projects/:id/sprint' },
   { label: 'Sprints', icon: <CalendarMonth />, path: '/projects/:id/sprints' },
-  { label: 'Board', icon: <DashboardIcon />, path: '/projects/:id/board' },
-  { label: 'Projects', icon: <FolderCopy />, path: '/projects' },
   { label: 'AI Assistant', icon: <SmartToy />, path: '/projects/:id/ai' },
   { label: 'Settings', icon: <SettingsIcon />, path: '/projects/:id/settings' },
 ];
@@ -36,7 +52,20 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { projectId } = useParams<{ projectId: string }>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const {
+    data,
+    isLoading: isProjectsLoading,
+    isError: projectsFailed,
+    refetch: refetchProjects,
+  } = useProjects();
+  const projects = data?.projects ?? [];
+  const selectedProjectId = projects.some(
+    (project) => project.id === projectId,
+  )
+    ? projectId
+    : '';
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -115,18 +144,94 @@ export default function AppLayout() {
             </Typography>
           </Box>
 
-          <Divider />
+          <Box sx={{ px: 2, pb: 2 }}>
+            <FormControl fullWidth size="small">
+              <Select
+                value={selectedProjectId}
+                displayEmpty
+                disabled={
+                  isProjectsLoading ||
+                  projectsFailed ||
+                  projects.length === 0
+                }
+                inputProps={{ 'aria-label': 'Select project' }}
+                onChange={(event) => {
+                  const selectedId = event.target.value;
+                  if (projects.some((project) => project.id === selectedId)) {
+                    navigate(`/projects/${selectedId}/backlog`);
+                  }
+                }}
+                renderValue={(selected) => {
+                  const selectedProject = projects.find(
+                    (project) => project.id === selected,
+                  );
+                  if (selectedProject) {
+                    return (
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        title={selectedProject.name}
+                      >
+                        {selectedProject.name}
+                      </Typography>
+                    );
+                  }
 
-          {/* Navigation */}
-          <List sx={{ flex: 1, px: 2, py: 2 }}>
+                  return (
+                    <Typography variant="body2" noWrap color="text.secondary">
+                      {isProjectsLoading
+                        ? 'Loading projects...'
+                        : projectsFailed
+                          ? 'Projects unavailable'
+                          : projects.length === 0
+                            ? 'No projects yet'
+                            : 'Select a project'}
+                    </Typography>
+                  );
+                }}
+                sx={{
+                  '& .MuiSelect-select': {
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  },
+                }}
+              >
+                {projects.map((project) => (
+                  <MenuItem
+                    key={project.id}
+                    value={project.id}
+                    title={project.name}
+                  >
+                    <Typography variant="body2" noWrap sx={{ minWidth: 0 }}>
+                      {project.name} ({project.key})
+                    </Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ px: 3, pt: 1, pb: 0.5 }}
+          >
+            PROJECT
+          </Typography>
+
+          {/* Main project navigation */}
+          <List sx={{ flex: '0 0 auto', px: 2, py: 0.5 }}>
             {navItems.map((item) => {
               const selected = isActive(item.path);
+              const isProjectRoute = item.path.includes('/:id/');
               return (
                 <ListItemButton
                   key={item.label}
                   selected={selected}
+                  disabled={isProjectRoute && !projectId}
                   onClick={() => {
-                    navigate(item.path.replace(':id', '1')); // TODO: Replace with actual project ID
+                    navigate(item.path.replace(':id', projectId ?? ''));
                   }}
                   sx={{
                     borderRadius: 1.5,
@@ -148,15 +253,15 @@ export default function AppLayout() {
                     },
                   }}
                 >
-                  <ListItemIcon 
-                    sx={{ 
-                      minWidth: 40, 
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 40,
                       color: selected ? 'primary.main' : 'text.secondary',
                     }}
                   >
                     {item.icon}
                   </ListItemIcon>
-                  <ListItemText 
+                  <ListItemText
                     primary={item.label}
                     slotProps={{
                       primary: {
@@ -169,6 +274,105 @@ export default function AppLayout() {
               );
             })}
           </List>
+
+          <Divider sx={{ mx: 2, my: 1.5 }} />
+
+          <Box sx={{ px: 2, flex: 1, minHeight: 0, overflowY: 'auto' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', px: 1, mb: 0.5 }}
+            >
+              PROJECTS
+            </Typography>
+
+            {projectsFailed ? (
+              <Alert
+                severity="error"
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => void refetchProjects()}
+                  >
+                    Retry
+                  </Button>
+                }
+                sx={{ px: 1, py: 0, alignItems: 'center', fontSize: '0.75rem' }}
+              >
+                Projects could not be loaded.
+              </Alert>
+            ) : isProjectsLoading ? (
+              <Typography variant="body2" color="text.secondary" sx={{ px: 1, py: 1 }}>
+                Loading projects...
+              </Typography>
+            ) : projects.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ px: 1, py: 1 }}>
+                No projects yet.
+              </Typography>
+            ) : (
+              projects.map((project) => (
+                <ListItemButton
+                  key={project.id}
+                  selected={project.id === projectId}
+                  onClick={() => navigate(`/projects/${project.id}/backlog`)}
+                  title={project.name}
+                  sx={{
+                    minWidth: 0,
+                    px: 1.5,
+                    py: 0.75,
+                    borderRadius: 1.5,
+                    '&.Mui-selected': {
+                      bgcolor: colors.primary.soft,
+                      color: 'primary.main',
+                    },
+                    '&.Mui-selected:hover': {
+                      bgcolor: colors.primary.soft,
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 32,
+                      color: project.id === projectId ? 'primary.main' : 'text.secondary',
+                    }}
+                  >
+                    <FolderOpen fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={project.name}
+                    slotProps={{
+                      primary: {
+                        noWrap: true,
+                        sx: { fontSize: '0.875rem' },
+                      },
+                    }}
+                  />
+                </ListItemButton>
+              ))
+            )}
+
+            <ListItemButton
+              selected={location.pathname === '/projects'}
+              onClick={() => navigate('/projects')}
+              sx={{
+                mt: 0.5,
+                borderRadius: 1.5,
+                '&.Mui-selected': {
+                  bgcolor: colors.primary.soft,
+                  color: 'primary.main',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 32 }}>
+                <FolderCopy fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary="All Projects"
+                slotProps={{ primary: { sx: { fontSize: '0.875rem' } } }}
+              />
+            </ListItemButton>
+          </Box>
 
           <Divider />
 
@@ -270,5 +474,3 @@ export default function AppLayout() {
     </Box>
   );
 }
-
-
