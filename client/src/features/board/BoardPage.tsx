@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
+import {
+  Alert,
   Box,
   Button,
   Card,
@@ -12,7 +25,12 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { ArrowBackOutlined, CheckCircleOutlined } from '@mui/icons-material';
+import {
+  ArrowBackOutlined,
+  AutoAwesomeOutlined,
+  CheckCircleOutlined,
+} from '@mui/icons-material';
+import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import type {
   CompleteSprintRequest,
   Todo,
@@ -23,6 +41,7 @@ import { ApiError, fieldErrors as getFieldErrors } from '../../api/client';
 import { useSprints } from '../../hooks/sprints/useSprints';
 import { useSprintBoard } from '../../hooks/sprints/useSprintBoard';
 import { useSprintMutations } from '../../hooks/sprints/useSprintMutations';
+import { useMoveTodo } from '../../hooks/todos/useMoveTodo';
 import { useUpdateTodo } from '../../hooks/todos/useUpdateTodo';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorState from '../../components/ErrorState';
@@ -36,6 +55,109 @@ const columns: { status: TodoStatus; label: string }[] = [
   { status: 'done', label: 'Done' },
 ];
 
+function formatSprintDates(startDate: string | null, endDate: string | null) {
+  const dateRange = startDate && endDate
+    ? `${format(parseISO(startDate), 'MMM d')} – ${format(parseISO(endDate), 'MMM d')}`
+    : startDate
+      ? `Starts ${format(parseISO(startDate), 'MMM d')}`
+      : endDate
+        ? `Ends ${format(parseISO(endDate), 'MMM d')}`
+        : 'No dates set';
+
+  if (!endDate) return dateRange;
+  const daysLeft = differenceInCalendarDays(parseISO(endDate), new Date());
+  if (daysLeft > 0) return `${dateRange} · ${daysLeft} days left`;
+  if (daysLeft === 0) return `${dateRange} · Ends today`;
+  return `${dateRange} · ${Math.abs(daysLeft)} days overdue`;
+}
+
+interface BoardColumnProps {
+  status: TodoStatus;
+  label: string;
+  count: number;
+  children: React.ReactNode;
+}
+
+function BoardColumn({ status, label, count, children }: BoardColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: status,
+    data: { status },
+  });
+
+  return (
+    <Paper
+      ref={setNodeRef}
+      variant="outlined"
+      sx={{
+        p: { xs: 1.5, sm: 2 },
+        minWidth: 0,
+        overflow: 'hidden',
+        outline: isOver ? '2px solid' : 'none',
+        outlineColor: 'primary.main',
+        bgcolor: isOver ? 'primary.50' : 'background.paper',
+        transition: 'background-color 120ms ease, outline-color 120ms ease',
+      }}
+    >
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          {label}
+        </Typography>
+        <Chip size="small" label={count} />
+      </Stack>
+      {children}
+    </Paper>
+  );
+}
+
+interface BoardTodoCardProps {
+  todo: Todo;
+  onClick: () => void;
+}
+
+function BoardTodoCard({ todo, onClick }: BoardTodoCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    isDragging,
+  } = useDraggable({
+    id: todo.id,
+    data: { todo },
+  });
+
+  return (
+    <Card
+      ref={setNodeRef}
+      variant="outlined"
+      onClick={onClick}
+      {...attributes}
+      {...listeners}
+      sx={{
+        minWidth: 0,
+        cursor: isDragging ? 'grabbing' : 'grab',
+        touchAction: 'none',
+        opacity: isDragging ? 0.45 : 1,
+        transform: CSS.Translate.toString(transform),
+      }}
+    >
+      <CardContent sx={{ p: '12px !important' }}>
+        <Typography variant="caption" color="text.secondary">
+          {todo.key}
+        </Typography>
+        <Typography sx={{ my: 0.5, fontWeight: 600, overflowWrap: 'anywhere' }}>
+          {todo.title}
+        </Typography>
+        <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+          <Chip size="small" label={todo.type} variant="outlined" />
+          <Chip size="small" label={todo.priority} />
+          <Chip size="small" label={`${todo.storyPoints ?? 0} pts`} variant="outlined" />
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function BoardPage() {
   const { projectId = '' } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
@@ -44,9 +166,15 @@ export default function BoardPage() {
   const activeSprint = sprints.find((sprint) => sprint.status === 'active') ?? null;
   const boardQuery = useSprintBoard(activeSprint?.id ?? '');
   const mutations = useSprintMutations();
+  const moveTodoMutation = useMoveTodo();
   const updateTodoMutation = useUpdateTodo();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+  const [boardError, setBoardError] = useState<string | null>(null);
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [detailsFieldErrors, setDetailsFieldErrors] =
     useState<Record<string, string>>({});
@@ -146,6 +274,40 @@ export default function BoardPage() {
     navigate(`/projects/${projectId}/backlog`);
   }
 
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over) return;
+
+    const todo = active.data.current?.todo as Todo | undefined;
+    const targetStatus = over.data.current?.status;
+    const targetColumn = columns.find((column) => column.status === targetStatus);
+    if (
+      !todo ||
+      !targetColumn ||
+      targetColumn.status === todo.status
+    ) {
+      return;
+    }
+
+    setBoardError(null);
+    try {
+      await moveTodoMutation.mutateAsync({
+        projectId,
+        todoId: todo.id,
+        data: {
+          sprintId: sprint.id,
+          status: targetColumn.status,
+          position: board[targetColumn.status].filter(
+            (item) => item.id !== todo.id
+          ).length,
+        },
+      });
+      await boardQuery.refetch();
+    } catch (error) {
+      setBoardError(error instanceof Error ? error.message : 'Failed to move todo.');
+    }
+  }
+
   const todoSprints = sprints.filter(
     (item) => item.status === 'planned' || item.status === 'active'
   );
@@ -153,107 +315,122 @@ export default function BoardPage() {
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 }, minWidth: 0 }}>
       <Stack spacing={2.5}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between' }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, overflowWrap: 'anywhere' }}>
-              {sprint.name}
-            </Typography>
-            {sprint.goal && (
-              <Typography color="text.secondary">{sprint.goal}</Typography>
-            )}
-            <Typography variant="body2" color="text.secondary">
-              {sprint.startDate ?? 'No start date'} – {sprint.endDate ?? 'No end date'}
-            </Typography>
-          </Box>
-          {isActiveSprint && (
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<CheckCircleOutlined />}
-              onClick={() => setCompleteDialogOpen(true)}
-              sx={{ alignSelf: { xs: 'stretch', sm: 'auto' }, whiteSpace: 'nowrap' }}
-            >
-              Complete sprint
-            </Button>
-          )}
-        </Stack>
-
         <Paper variant="outlined" sx={{ p: { xs: 1.5, sm: 2 } }}>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
-            spacing={1}
-            sx={{ justifyContent: 'space-between', mb: 1 }}
+            spacing={1.5}
+            sx={{ alignItems: { sm: 'flex-start' }, justifyContent: 'space-between' }}
           >
-            <Typography variant="body2">
-              {sprint.stats.donePoints} / {sprint.stats.totalPoints} points
-            </Typography>
-            <Typography variant="body2">
-              {sprint.stats.doneTodos} / {sprint.stats.totalTodos} todos
+            <Box sx={{ minWidth: 0 }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={{ xs: 0.25, sm: 1.5 }}
+                sx={{ alignItems: { sm: 'baseline' }, minWidth: 0 }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  {sprint.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {formatSprintDates(sprint.startDate, sprint.endDate)}
+                </Typography>
+              </Stack>
+              {sprint.goal && (
+                <Typography variant="body2" sx={{ mt: 0.25, color: 'text.primary' }}>
+                  Goal: {sprint.goal}
+                </Typography>
+              )}
+            </Box>
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ flexShrink: 0, alignSelf: { xs: 'stretch', sm: 'auto' } }}
+            >
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AutoAwesomeOutlined />}
+                disabled
+                title="Sprint summaries are not available yet."
+              >
+                Summarize
+              </Button>
+              {isActiveSprint && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<CheckCircleOutlined />}
+                  onClick={() => setCompleteDialogOpen(true)}
+                  sx={{ whiteSpace: 'nowrap' }}
+                >
+                  Complete sprint
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ alignItems: { sm: 'center' }, mt: 1.5 }}
+          >
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{ flex: 1, height: 8, borderRadius: 4 }}
+            />
+            <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+              {sprint.stats.donePoints} / {sprint.stats.totalPoints} pts done
             </Typography>
           </Stack>
-          <LinearProgress variant="determinate" value={progress} />
         </Paper>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'minmax(0, 1fr)',
-              sm: 'repeat(2, minmax(0, 1fr))',
-              lg: 'repeat(4, minmax(0, 1fr))',
-            },
-            gap: 1.5,
-            alignItems: 'start',
-          }}
+        {boardError && (
+          <Alert severity="error" onClose={() => setBoardError(null)}>
+            {boardError}
+          </Alert>
+        )}
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(event) => void handleDragEnd(event)}
         >
-          {columns.map(({ status, label }) => (
-            <Paper
-              key={status}
-              variant="outlined"
-              sx={{ p: { xs: 1.5, sm: 2 }, minWidth: 0, overflow: 'hidden' }}
-            >
-              <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  {label}
-                </Typography>
-                <Chip size="small" label={board[status].length} />
-              </Stack>
-              <Stack spacing={1}>
-                {board[status].map((todo) => (
-                  <Card
-                    key={todo.id}
-                    variant="outlined"
-                    onClick={() => setSelectedTodo(todo)}
-                    sx={{ minWidth: 0, cursor: 'pointer' }}
-                  >
-                    <CardContent sx={{ p: '12px !important' }}>
-                      <Typography variant="caption" color="text.secondary">
-                        {todo.key}
-                      </Typography>
-                      <Typography sx={{ my: 0.5, fontWeight: 600, overflowWrap: 'anywhere' }}>
-                        {todo.title}
-                      </Typography>
-                      <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-                        <Chip size="small" label={todo.type} variant="outlined" />
-                        <Chip size="small" label={todo.priority} />
-                        <Chip size="small" label={`${todo.storyPoints ?? 0} pts`} variant="outlined" />
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                ))}
-                {board[status].length === 0 && (
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
-                    No todos
-                  </Typography>
-                )}
-              </Stack>
-            </Paper>
-          ))}
-        </Box>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'minmax(0, 1fr)',
+                sm: 'repeat(2, minmax(0, 1fr))',
+                lg: 'repeat(4, minmax(0, 1fr))',
+              },
+              gap: 1.5,
+              alignItems: 'start',
+            }}
+          >
+            {columns.map(({ status, label }) => (
+              <BoardColumn
+                key={status}
+                status={status}
+                label={label}
+                count={board[status].length}
+              >
+                <Stack spacing={1} sx={{ minHeight: 40 }}>
+                  {board[status].map((todo) => (
+                    <BoardTodoCard
+                      key={todo.id}
+                      todo={todo}
+                      onClick={() => setSelectedTodo(todo)}
+                    />
+                  ))}
+                  {board[status].length === 0 && (
+                    <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+                      No todos
+                    </Typography>
+                  )}
+                </Stack>
+              </BoardColumn>
+            ))}
+          </Box>
+        </DndContext>
       </Stack>
 
       <TodoDetailsDialog

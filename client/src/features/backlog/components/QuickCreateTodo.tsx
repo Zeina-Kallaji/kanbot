@@ -61,7 +61,7 @@ export default function QuickCreateTodo({
       onChange={(event) => setTitle(event.target.value)}
       onKeyDown={handleKeyDown}
       disabled={isCreating}
-      placeholder="+ Create todo"
+      placeholder="Type a title and press Enter"
       size="medium"
       slotProps={{
         input: {

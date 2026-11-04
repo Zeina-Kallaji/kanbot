@@ -11,13 +11,14 @@ import {
   Paper,
   Stack,
   Typography,
+  Divider,
 } from '@mui/material';
 
 import {
   MoreVertOutlined,
-  EditOutlined,
-  DriveFileMoveOutlined,
-  DragIndicatorOutlined,
+  ArrowUpwardOutlined,
+  ArrowDownwardOutlined,
+  DeleteOutlineOutlined,
 } from '@mui/icons-material';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -32,6 +33,10 @@ interface BacklogItemProps {
   isDraggable: boolean;
   sprints: Sprint[];
   onMove: (todo: Todo, sprintId: string | null) => void;
+  onReorder: (todo: Todo, position: number) => void;
+  onDelete: (todo: Todo) => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   compact: boolean;
 }
 
@@ -49,6 +54,10 @@ export default function BacklogItem({
   isDraggable,
   sprints,
   onMove,
+  onReorder,
+  onDelete,
+  canMoveUp,
+  canMoveDown,
   compact,
 }: BacklogItemProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -71,29 +80,23 @@ export default function BacklogItem({
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleEdit = (event: React.MouseEvent) => {
+  const handleMenuAction = (action: () => void) => (event: React.MouseEvent) => {
     event.stopPropagation();
     handleMenuClose();
-    onClick(todo);
+    action();
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
   };
 
   return (
     <Paper
       ref={setNodeRef}
       variant="outlined"
-      role="button"
-      tabIndex={0}
+      {...attributes}
+      {...listeners}
       onClick={() => onClick(todo)}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onClick(todo);
-        }
-      }}
       sx={{
         transform: CSS.Transform.toString(transform),
         opacity: isDragging ? 0.45 : 1,
@@ -105,6 +108,7 @@ export default function BacklogItem({
         borderBottom: compact ? 1 : undefined,
         borderColor: compact ? 'divider' : undefined,
         cursor: 'pointer',
+        touchAction: isDraggable ? 'none' : 'auto',
         transition: transition
           ? `${transition}, border-color 0.2s, background-color 0.2s`
           : 'border-color 0.2s, background-color 0.2s',
@@ -126,7 +130,6 @@ export default function BacklogItem({
           justifyContent: 'space-between',
         }}
       >
-        {/* Label and Title */}
         <Stack
           direction="row"
           spacing={compact ? 1 : 1.5}
@@ -137,17 +140,6 @@ export default function BacklogItem({
             flexWrap: { xs: 'wrap', md: 'nowrap' },
           }}
         >
-          <IconButton
-            size="small"
-            aria-label={`Drag ${todo.key}`}
-            disabled={!isDraggable}
-            {...attributes}
-            {...listeners}
-            onClick={(event) => event.stopPropagation()}
-            sx={{ cursor: isDraggable ? 'grab' : 'default', flexShrink: 0 }}
-          >
-            <DragIndicatorOutlined fontSize="small" />
-          </IconButton>
           <Typography
             variant="body2"
             color="text.secondary"
@@ -181,25 +173,38 @@ export default function BacklogItem({
           </Box>
         </Stack>
 
-        {/* Type, Priority, Points chips */}
         <Stack
           direction="row"
           spacing={1}
           sx={{
             alignItems: 'center',
             flexShrink: 0,
+            justifyContent: { md: 'flex-end' },
+            width: { md: 228 },
           }}
         >
           <Chip
             size="small"
             label={todo.type}
             variant="outlined"
+            sx={{
+              width: 68,
+              height: 24,
+              borderRadius: 12,
+              '& .MuiChip-label': { px: 0.75, textAlign: 'center' },
+            }}
           />
 
           <Chip
             size="small"
             label={todo.priority}
             color={priorityColors[todo.priority]}
+            sx={{
+              width: 76,
+              height: 24,
+              borderRadius: 12,
+              '& .MuiChip-label': { px: 0.75, textAlign: 'center' },
+            }}
           />
 
           <Chip
@@ -210,13 +215,19 @@ export default function BacklogItem({
                 ? `${todo.storyPoints} SP`
                 : '0 SP'
             }
+            sx={{
+              width: 56,
+              height: 24,
+              borderRadius: 12,
+              '& .MuiChip-label': { px: 0.5, textAlign: 'center' },
+            }}
           />
         </Stack>
 
-        {/* Three-dot menu */}
         <Box sx={{ flexShrink: 0 }}>
           <IconButton
             size="small"
+            onPointerDown={(event) => event.stopPropagation()}
             onClick={handleMenuClick}
             aria-label="More options"
             aria-controls={open ? 'todo-menu' : undefined}
@@ -232,38 +243,44 @@ export default function BacklogItem({
             open={open}
             onClose={handleMenuClose}
           >
-            <MenuItem onClick={handleEdit}>
-              <EditOutlined sx={{ mr: 1, fontSize: '1.25rem' }} />
-              Edit
-            </MenuItem>
-
-            <MenuItem disabled>
-              <DriveFileMoveOutlined sx={{ mr: 1, fontSize: '1.25rem' }} />
-              Move to
+            <MenuItem
+              disabled={!canMoveUp}
+              onClick={handleMenuAction(() => onReorder(todo, 0))}
+            >
+              <ArrowUpwardOutlined sx={{ mr: 1, fontSize: '1.25rem' }} />
+              Move up
             </MenuItem>
             <MenuItem
-              disabled={todo.sprintId === null}
-              onClick={(event) => {
-                event.stopPropagation();
-                handleMenuClose();
-                onMove(todo, null);
-              }}
+              disabled={!canMoveDown}
+              onClick={handleMenuAction(() => onReorder(todo, Number.MAX_SAFE_INTEGER))}
             >
-              Backlog
+              <ArrowDownwardOutlined sx={{ mr: 1, fontSize: '1.25rem' }} />
+              Move down
             </MenuItem>
+            <Divider />
             {sprints.map((sprint) => (
               <MenuItem
                 key={sprint.id}
                 disabled={todo.sprintId === sprint.id}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleMenuClose();
-                  onMove(todo, sprint.id);
-                }}
+                onClick={handleMenuAction(() => onMove(todo, sprint.id))}
               >
-                {sprint.name}
+                Move to {sprint.name}
               </MenuItem>
             ))}
+            <MenuItem
+              disabled={todo.sprintId === null}
+              onClick={handleMenuAction(() => onMove(todo, null))}
+            >
+              Move to backlog
+            </MenuItem>
+            <Divider />
+            <MenuItem
+              onClick={handleMenuAction(() => onDelete(todo))}
+              sx={{ color: 'error.main' }}
+            >
+              <DeleteOutlineOutlined sx={{ mr: 1, fontSize: '1.25rem' }} />
+              Delete todo
+            </MenuItem>
           </Menu>
         </Box>
       </Stack>

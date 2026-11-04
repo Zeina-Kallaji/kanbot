@@ -61,7 +61,7 @@ export const router = createBrowserRouter([
 },
           {
             path: '/projects/:projectId/sprint',
-            element: <div>Active Sprint (Day 4)</div>,
+            element: <Navigate to="../board" replace />,
           },
           {
             path: '/projects/:projectId/board',

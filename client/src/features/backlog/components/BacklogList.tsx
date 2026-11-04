@@ -14,6 +14,8 @@ interface BacklogListProps {
   isDraggable: boolean;
   sprints: Sprint[];
   onMove: (todo: Todo, sprintId: string | null) => void;
+  onReorder: (todo: Todo, position: number) => void;
+  onDelete: (todo: Todo) => void;
   compact?: boolean;
 }
 
@@ -24,6 +26,8 @@ export default function BacklogList({
   isDraggable,
   sprints,
   onMove,
+  onReorder,
+  onDelete,
   compact = false,
 }: BacklogListProps) {
   const orderedTodos = [...todos].sort(
@@ -51,18 +55,30 @@ export default function BacklogList({
           outlineColor: 'primary.main',
         }}
       >
-        {orderedTodos.map((todo) => (
-          <BacklogItem
-            key={todo.id}
-            todo={todo}
-            onClick={onTodoClick}
-            listId={listId}
-            isDraggable={isDraggable}
-            sprints={sprints}
-            onMove={onMove}
-            compact={compact}
-          />
-        ))}
+        {orderedTodos.map((todo) => {
+          const orderedList =
+            listId === 'backlog'
+              ? orderedTodos
+              : orderedTodos.filter((item) => item.status === todo.status);
+          const index = orderedList.findIndex((item) => item.id === todo.id);
+
+          return (
+            <BacklogItem
+              key={todo.id}
+              todo={todo}
+              onClick={onTodoClick}
+              listId={listId}
+              isDraggable={isDraggable}
+              sprints={sprints}
+              onMove={onMove}
+              onReorder={onReorder}
+              onDelete={onDelete}
+              canMoveUp={isDraggable && index > 0}
+              canMoveDown={isDraggable && index < orderedList.length - 1}
+              compact={compact}
+            />
+          );
+        })}
       </Stack>
     </SortableContext>
   );

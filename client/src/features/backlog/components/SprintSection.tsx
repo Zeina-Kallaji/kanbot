@@ -26,6 +26,8 @@ interface SprintSectionProps {
   sprints: Sprint[];
   onTodoClick: (todo: Todo) => void;
   onMove: (todo: Todo, sprintId: string | null) => void;
+  onReorder: (todo: Todo, position: number) => void;
+  onDelete: (todo: Todo) => void;
   onEdit: (sprint: Sprint) => void;
   onStart: (sprint: Sprint) => void;
 }
@@ -56,6 +58,8 @@ export default function SprintSection({
   sprints,
   onTodoClick,
   onMove,
+  onReorder,
+  onDelete,
   onEdit,
   onStart,
 }: SprintSectionProps) {
@@ -172,6 +176,8 @@ export default function SprintSection({
             isDraggable={isDraggable}
             sprints={sprints}
             onMove={onMove}
+            onReorder={onReorder}
+            onDelete={onDelete}
             compact
           />
           {todos.length === 0 && (

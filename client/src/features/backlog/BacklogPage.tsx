@@ -39,6 +39,7 @@ import type {
 } from '../../types/api';
 import { listTodos } from '../../api/todos';
 import { ApiError, fieldErrors as getFieldErrors } from '../../api/client';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { useSprints } from '../../hooks/sprints/useSprints';
 import { useSprintMutations } from '../../hooks/sprints/useSprintMutations';
 import { useCreateTodo } from '../../hooks/todos/useCreateTodo';
@@ -95,6 +96,7 @@ export default function BacklogPage() {
   const [type, setType] = useState<TodoType | ''>('');
   const deferredSearch = useDeferredValue(search);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null);
   const [pageError, setPageError] = useState<string | null>(null);
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [detailsFieldErrors, setDetailsFieldErrors] =
@@ -257,6 +259,20 @@ export default function BacklogPage() {
     }
   }
 
+  async function handleConfirmDeleteTodo() {
+    if (!todoToDelete) return;
+    setPageError(null);
+    try {
+      await deleteTodoMutation.mutateAsync({
+        todoId: todoToDelete.id,
+        projectId: validProjectId,
+      });
+      setTodoToDelete(null);
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : 'Failed to delete todo.');
+    }
+  }
+
   async function handleMoveTodo(todo: Todo, targetSprintId: string | null) {
     const targetTodos = targetSprintId
       ? (sprintTodosById.get(targetSprintId) ?? []).filter(
@@ -282,6 +298,35 @@ export default function BacklogPage() {
       });
     } catch (error) {
       setPageError(error instanceof Error ? error.message : 'Failed to move todo.');
+    }
+  }
+
+  async function handleReorderTodo(todo: Todo, position: number) {
+    const todoList =
+      todo.sprintId === null
+        ? allTodos
+        : (sprintTodosById.get(todo.sprintId) ?? []).filter(
+            (item) => item.status === todo.status
+          );
+    const listLength = todoList.filter((item) => item.id !== todo.id).length + 1;
+    const targetPosition =
+      position === Number.MAX_SAFE_INTEGER
+        ? listLength - 1
+        : Math.min(position, listLength - 1);
+
+    setPageError(null);
+    try {
+      await moveTodoMutation.mutateAsync({
+        projectId: validProjectId,
+        todoId: todo.id,
+        data: {
+          sprintId: todo.sprintId,
+          status: todo.status,
+          position: targetPosition,
+        },
+      });
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : 'Failed to reorder todo.');
     }
   }
 
@@ -481,6 +526,8 @@ export default function BacklogPage() {
             sprints={sprintOptions}
             onTodoClick={handleOpenTodo}
             onMove={handleMoveTodo}
+            onReorder={handleReorderTodo}
+            onDelete={setTodoToDelete}
             onEdit={(item) => openSprintDialog('edit', item)}
             onStart={(item) => openSprintDialog('start', item)}
           />
@@ -519,7 +566,9 @@ export default function BacklogPage() {
                     startIcon={<AddOutlined />}
                     onClick={() => {
                       document
-                        .querySelector<HTMLInputElement>('input[placeholder="+ Create todo"]')
+                        .querySelector<HTMLInputElement>(
+                          'input[placeholder="Type a title and press Enter"]'
+                        )
                         ?.focus();
                     }}
                   >
@@ -544,6 +593,8 @@ export default function BacklogPage() {
               isDraggable={!filtersActive}
               sprints={sprintOptions}
               onMove={handleMoveTodo}
+              onReorder={handleReorderTodo}
+              onDelete={setTodoToDelete}
             />
           )}
 
@@ -572,6 +623,16 @@ export default function BacklogPage() {
         isDeleting={deleteTodoMutation.isPending}
         fieldErrors={detailsFieldErrors}
         serverError={detailsError}
+      />
+
+      <ConfirmDialog
+        open={Boolean(todoToDelete)}
+        title="Delete todo?"
+        description={`Delete "${todoToDelete?.title ?? ''}"? This action cannot be undone.`}
+        confirmText="Delete todo"
+        loading={deleteTodoMutation.isPending}
+        onClose={() => setTodoToDelete(null)}
+        onConfirm={() => void handleConfirmDeleteTodo()}
       />
 
       {sprintDialogMode === 'create' && (

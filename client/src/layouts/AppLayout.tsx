@@ -45,7 +45,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Backlog', icon: <FolderOpen />, path: '/projects/:id/backlog' },
-  { label: 'Active Sprint', icon: <ViewKanban />, path: '/projects/:id/sprint' },
+  { label: 'Active Sprint', icon: <ViewKanban />, path: '/projects/:id/board' },
   { label: 'Sprints', icon: <CalendarMonth />, path: '/projects/:id/sprints' },
   { label: 'AI Assistant', icon: <SmartToy />, path: '/projects/:id/ai' },
   { label: 'Settings', icon: <SettingsIcon />, path: '/projects/:id/settings' },

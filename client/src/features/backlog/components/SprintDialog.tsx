@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Alert,
   Button,
@@ -8,13 +8,13 @@ import {
   DialogTitle,
   Stack,
   TextField,
-} from '@mui/material';
+} from "@mui/material";
 import type {
   CreateSprintRequest,
   Sprint,
   StartSprintRequest,
   UpdateSprintRequest,
-} from '../../../types/api';
+} from "../../../types/api";
 
 interface SprintDialogBaseProps {
   open: boolean;
@@ -24,25 +24,26 @@ interface SprintDialogBaseProps {
   onDelete?: () => void;
 }
 
-type SprintDialogProps = SprintDialogBaseProps & (
-  | {
-      mode: 'create';
-      onSubmit: (data: CreateSprintRequest) => Promise<void>;
-    }
-  | {
-      mode: 'edit';
-      onSubmit: (data: UpdateSprintRequest) => Promise<void>;
-    }
-  | {
-      mode: 'start';
-      onSubmit: (data: StartSprintRequest) => Promise<void>;
-    }
-);
+type SprintDialogProps = SprintDialogBaseProps &
+  (
+    | {
+        mode: "create";
+        onSubmit: (data: CreateSprintRequest) => Promise<void>;
+      }
+    | {
+        mode: "edit";
+        onSubmit: (data: UpdateSprintRequest) => Promise<void>;
+      }
+    | {
+        mode: "start";
+        onSubmit: (data: StartSprintRequest) => Promise<void>;
+      }
+  );
 
 function localDate(date: Date): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -65,41 +66,39 @@ export default function SprintDialog({
   onDelete,
   onSubmit,
 }: SprintDialogProps) {
-  const [name, setName] = useState(sprint?.name ?? '');
-  const [goal, setGoal] = useState(sprint?.goal ?? '');
+  const [name, setName] = useState(sprint?.name ?? "");
+  const [goal, setGoal] = useState(sprint?.goal ?? "");
   const [startDate, setStartDate] = useState(() => {
     const today = defaultStartDate();
-    return mode === 'start' ? today : sprint?.startDate ?? '';
+    return mode === "start" ? today : (sprint?.startDate ?? "");
   });
   const [endDate, setEndDate] = useState(() => {
     const today = defaultStartDate();
-    return mode === 'start'
-      ? defaultEndDate(today)
-      : sprint?.endDate ?? '';
+    return mode === "start" ? defaultEndDate(today) : (sprint?.endDate ?? "");
   });
   const [error, setError] = useState<string | null>(null);
 
   const title =
-    mode === 'create'
-      ? 'Create sprint'
-      : mode === 'edit'
-        ? 'Edit sprint'
-        : 'Start sprint';
+    mode === "create"
+      ? "Create sprint"
+      : mode === "edit"
+        ? "Edit sprint"
+        : "Start sprint";
 
   async function handleSubmit() {
     if (startDate && endDate && endDate < startDate) {
-      setError('End date must be on or after the start date.');
+      setError("End date must be on or after the start date.");
       return;
     }
 
     setError(null);
     try {
-      if (mode === 'start') {
+      if (mode === "start") {
         await onSubmit({
           startDate,
           endDate,
         });
-      } else if (mode === 'create') {
+      } else if (mode === "create") {
         await onSubmit({
           ...(name.trim() ? { name: name.trim() } : {}),
           goal: goal.trim(),
@@ -119,24 +118,29 @@ export default function SprintDialog({
       setError(
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to save the sprint.'
+          : "Unable to save the sprint."
       );
     }
   }
 
   return (
-    <Dialog open={open} onClose={isSaving ? undefined : onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={isSaving ? undefined : onClose}
+      fullWidth
+      maxWidth="sm"
+    >
       <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           {error && <Alert severity="error">{error}</Alert>}
-          {mode !== 'start' && (
+          {mode !== "start" && (
             <>
               <TextField
-                label={mode === 'create' ? 'Name (optional)' : 'Name'}
+                label={mode === "create" ? "Name (optional)" : "Name"}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder={mode === 'create' ? 'Sprint name' : undefined}
+                placeholder={mode === "create" ? "Sprint name" : undefined}
                 slotProps={{ htmlInput: { maxLength: 80 } }}
               />
               <TextField
@@ -165,8 +169,8 @@ export default function SprintDialog({
           />
         </Stack>
       </DialogContent>
-      <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
-        {mode === 'edit' && onDelete ? (
+      <DialogActions sx={{ p: 2, justifyContent: "space-between" }}>
+        {mode === "edit" && onDelete ? (
           <Button color="error" onClick={onDelete} disabled={isSaving}>
             Delete sprint
           </Button>
@@ -174,14 +178,20 @@ export default function SprintDialog({
           <span />
         )}
         <Stack direction="row" spacing={1}>
-        <Button onClick={onClose} disabled={isSaving}>Cancel</Button>
-        <Button
-          variant="contained"
-          onClick={() => void handleSubmit()}
-          disabled={isSaving || (mode === 'edit' && !name.trim())}
-        >
-          {isSaving ? 'Saving...' : mode === 'start' ? 'Start sprint' : 'Save'}
-        </Button>
+          <Button onClick={onClose} disabled={isSaving}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => void handleSubmit()}
+            disabled={isSaving || (mode === "edit" && !name.trim())}
+          >
+            {isSaving
+              ? "Saving..."
+              : mode === "start"
+                ? "Start sprint"
+                : "Save"}
+          </Button>
         </Stack>
       </DialogActions>
     </Dialog>
