@@ -24,7 +24,7 @@ npm run smoke             # optional: tests every endpoint on a throwaway DB
 ```
 
 ### 1.1 The AI: mock or real
-- **Mock (default).** With `AI_API_KEY` empty, a built-in rule-based assistant answers instantly, for free, offline. Every AI endpoint returns the same JSON shape as with a real model, with `"source": "mock"`. Build the whole app in mock mode.
+- **Mock (default).** With `AI_API_KEY` empty, most AI features use a built-in rule-based assistant. Sprint summary generation is an exception: it returns `502 AI_ERROR` and does not save mock output.
 - **Real.** Put a key from a free provider in `.env`. The backend talks to any OpenAI-compatible API:
 
   ```env
@@ -230,7 +230,7 @@ erDiagram
 | POST | `/projects/:projectId/ai/chat` | `ChatRequest` → `ChatResponse` | AI-1 |
 | POST | `/projects/:projectId/ai/generate-todos` | `GenerateTodosRequest` → `GenerateTodosResponse` | AI-2 |
 | POST | `/projects/:projectId/ai/plan-sprint` | `PlanSprintRequest` → `PlanSprintResponse` | AI-3 |
-| POST | `/sprints/:sprintId/ai/summary` | → `SprintSummaryResponse` (saved on the sprint) | AI-4 |
+| POST | `/sprints/:sprintId/ai/summary` | `{ projectId }` → `SprintSummaryResponse` (real AI; saved on the sprint) | AI-4 |
 
 ### 4.4 Endpoint details and examples
 
@@ -324,10 +324,12 @@ POST /api/projects/:projectId/ai/plan-sprint
 The server guarantees that `todoIds` are real backlog ids and that `totalPoints ≤ capacity`. Show the matching todos from your backlog cache. Create the sprint with `POST /projects/:id/sprints { goal, todoIds }`.
 
 ```http
-POST /api/sprints/:sprintId/ai/summary          // active or completed sprint (planned → 409)
+POST /api/sprints/:sprintId/ai/summary          // active or completed sprint; body projectId required; planned → 409
+{ "projectId": "…" }
 200 { "sprint": { …, "summary": { "content": "## Sprint 1 summary …", "source": "ai", "generatedAt": "…" } },
       "summary": { "content": "…markdown…", "source": "ai", "generatedAt": "…" } }
 ```
+Unlike other AI features, sprint summaries require real AI configuration. With AI disabled, the endpoint returns `502 AI_ERROR` and does not save a mock summary.
 
 ```http
 POST /api/projects/:projectId/ai/chat

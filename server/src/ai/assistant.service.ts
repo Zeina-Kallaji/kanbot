@@ -1,12 +1,11 @@
 /**
- * The Kanbot assistant. Every feature has two implementations:
- *  - real: an LLM through any OpenAI-compatible API (when AI_API_KEY is set)
- *  - mock: simple rules, free and offline (default), so the frontend can be built without a key
- * Both return exactly the same shapes.
+ * The Kanbot assistant. Most features support a real LLM or an offline mock;
+ * sprint summaries require real AI so generated summaries are never presented as mock output.
  */
 import { z } from 'zod';
 import { env } from '../config/env.js';
 import { db, type ProjectRecord, type SprintRecord, type TodoRecord } from '../db/store.js';
+import { aiError } from '../lib/errors.js';
 import { activeSprintOf, byOrder, statsFor, todosOfSprint } from '../services/board.service.js';
 import {
   STORY_POINTS,
@@ -242,41 +241,17 @@ function mockPlanSprint(
 // ─────────────────────────── 3. Summarize sprint ───────────────────────────
 
 export async function summarizeSprint(project: ProjectRecord, sprint: SprintRecord): Promise<string> {
+  if (!env.aiEnabled) {
+    throw aiError(
+      'Real AI is not configured. Set AI_API_KEY and AI_MODEL on the server to generate a sprint summary.'
+    );
+  }
+
   const todos = todosOfSprint(sprint.id);
   const stats = sprint.completedStats ?? { ...statsFor(todos), carriedOver: 0 };
   const done = todos.filter((t) => t.status === 'done');
   const open = todos.filter((t) => t.status !== 'done');
   const pct = stats.totalPoints ? Math.round((stats.donePoints / stats.totalPoints) * 100) : 0;
-
-  if (!env.aiEnabled) {
-    const list = (items: TodoRecord[], empty: string) => (items.length ? items.map((t) => `- **${t.key}** ${t.title}`).join('\n') : empty);
-    const notFinished =
-      sprint.status === 'completed'
-        ? stats.carriedOver
-          ? `${stats.carriedOver} todo(s) were not finished and were carried over.`
-          : 'Everything planned was finished. 🎉'
-        : list(open, 'Nothing left. 🎉');
-    const suggestions = [
-      pct < 70 && '- The sprint was over-committed. Plan fewer points next time.',
-      pct >= 100 && '- You finished everything: try a slightly higher capacity next sprint.',
-      open.some((t) => t.status === 'in_review') && '- Several todos are stuck in review. Review them earlier in the sprint.',
-      todos.some((t) => t.storyPoints === null) && '- Some todos had no story points. Estimate everything during planning.',
-      '- Keep todos small (≤ 5 points) so progress is visible every day.',
-    ].filter(Boolean);
-    return [
-      `## ${sprint.name} summary`,
-      sprint.goal && `**Goal:** ${sprint.goal}`,
-      `**Progress:** ${stats.doneTodos}/${stats.totalTodos} todos, ${stats.donePoints}/${stats.totalPoints} points (${pct}%).`,
-      '### Highlights',
-      list(done.slice(0, 10), 'No todos were finished yet.'),
-      '### Not finished',
-      notFinished,
-      '### Suggestions',
-      ...suggestions,
-    ]
-      .filter(Boolean)
-      .join('\n\n');
-  }
 
   return complete(
     [

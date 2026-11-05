@@ -7,6 +7,7 @@ import type {
   GenerateTodosResponse,
   PlanSprintRequest,
   PlanSprintResponse,
+  SprintSummaryRequest,
   SprintSummaryResponse,
 } from '../types/api';
 
@@ -48,10 +49,21 @@ export function planSprint(
   );
 }
 
-export function summarizeSprint(sprintId: string): Promise<SprintSummaryResponse> {
-  return requireResponse(
-    request<SprintSummaryResponse>('POST', `/sprints/${sprintId}/ai/summary`, {})
+export async function summarizeSprint(
+  projectId: string,
+  sprintId: string
+): Promise<SprintSummaryResponse> {
+  const data = await requireResponse(
+    request<SprintSummaryResponse>(
+      'POST',
+      `/sprints/${sprintId}/ai/summary`,
+      { projectId } satisfies SprintSummaryRequest
+    )
   );
+  if (data.sprint.id !== sprintId || data.sprint.projectId !== projectId) {
+    throw new Error('The server returned a summary for a different sprint.');
+  }
+  return data;
 }
 
 export function sendChat(

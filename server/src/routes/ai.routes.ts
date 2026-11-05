@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { aiSource, chat, generateTodos, planSprint, summarizeSprint } from '../ai/assistant.service.js';
 import { env } from '../config/env.js';
 import { db } from '../db/store.js';
-import { AppError, conflict } from '../lib/errors.js';
+import { AppError, conflict, notFound } from '../lib/errors.js';
 import { currentUser } from '../middleware/auth.js';
 import { parse } from '../middleware/validate.js';
 import { getProject, getSprint, now, toSprint } from '../services/board.service.js';
@@ -13,6 +13,7 @@ import type {
   ChatResponse,
   GenerateTodosResponse,
   PlanSprintResponse,
+  SprintSummaryRequest,
   SprintSummaryResponse,
 } from '../types/api.js';
 
@@ -67,7 +68,12 @@ aiRouter.post('/projects/:projectId/ai/plan-sprint', aiLimiter, async (req, res)
 });
 
 aiRouter.post('/sprints/:sprintId/ai/summary', aiLimiter, async (req, res) => {
+  const body = parse(
+    z.object({ projectId: z.string().min(1) }),
+    req.body ?? {},
+  ) satisfies SprintSummaryRequest;
   const { sprint, project } = getSprint(currentUser(req).id, String(req.params.sprintId));
+  if (project.id !== body.projectId) throw notFound('Sprint');
   if (sprint.status === 'planned') throw conflict('A planned sprint has nothing to summarize yet. Start it first.');
   const content = await summarizeSprint(project, sprint);
   const summary = { content, source: aiSource(), generatedAt: now() };

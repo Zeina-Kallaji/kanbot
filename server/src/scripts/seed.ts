@@ -1,7 +1,7 @@
 /**
  * Resets the database with a demo account and realistic data.   npm run seed
  *   demo@kanbot.dev / password123
- * One project with: a completed sprint (with summary), an active sprint
+ * One project with: a completed sprint, an active sprint
  * (todos in every column), a planned sprint, and a backlog.
  */
 import { randomUUID } from 'node:crypto';
@@ -75,21 +75,6 @@ const sprint1 = sprint({
     donePoints: 13,
     byStatus: { todo: 0, in_progress: 1, in_review: 0, done: 4 },
     carriedOver: 1,
-  },
-  summary: {
-    source: 'mock',
-    generatedAt: iso(addDays(t0, -8)),
-    content: [
-      '## Sprint 1 summary',
-      '**Goal:** Set up the project and authentication',
-      '**Progress:** 4/5 todos, 13/16 points (81%).',
-      '### Highlights',
-      '- **KAN-1** Set up Vite + React + TypeScript\n- **KAN-2** Build the login page\n- **KAN-3** Build the register page\n- **KAN-4** Add the auth guard',
-      '### Not finished',
-      '1 todo(s) were not finished and were carried over.',
-      '### Suggestions',
-      '- Keep todos small (≤ 5 points) so progress is visible every day.',
-    ].join('\n\n'),
   },
 });
 const sprint2 = sprint({

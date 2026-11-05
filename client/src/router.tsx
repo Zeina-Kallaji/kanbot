@@ -9,6 +9,7 @@ import ProjectsPage from './features/projects/ProjectsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import BacklogPage from './features/backlog/BacklogPage';
 import BoardPage from './features/board/BoardPage';
+import SprintsPage from './features/sprints/SprintsPage';
 
 /**
  * Application Router
@@ -69,7 +70,11 @@ export const router = createBrowserRouter([
           },
           {
             path: '/projects/:projectId/sprints',
-            element: <div>Sprints (Day 5)</div>,
+            element: <SprintsPage />,
+          },
+          {
+            path: '/projects/:projectId/sprints/:sprintId',
+            element: <SprintsPage />,
           },
         ],
       },

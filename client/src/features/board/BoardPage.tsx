@@ -38,7 +38,6 @@ import {
 } from '@mui/icons-material';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
-import { summarizeSprint } from '../../api/ai';
 import type {
   CompleteSprintRequest,
   SprintSummary,
@@ -48,6 +47,7 @@ import type {
 } from '../../types/api';
 import { ApiError, fieldErrors as getFieldErrors } from '../../api/client';
 import { useSprints } from '../../hooks/sprints/useSprints';
+import { useSummarizeSprint } from '../../hooks/sprints/useSummarizeSprint';
 import { useSprintBoard } from '../../hooks/sprints/useSprintBoard';
 import { useSprintMutations } from '../../hooks/sprints/useSprintMutations';
 import { useMoveTodo } from '../../hooks/todos/useMoveTodo';
@@ -171,6 +171,7 @@ export default function BoardPage() {
   const { projectId = '' } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const sprintsQuery = useSprints(projectId);
+  const summarizeMutation = useSummarizeSprint();
   const sprints = sprintsQuery.data?.sprints ?? [];
   const activeSprint = sprints.find((sprint) => sprint.status === 'active') ?? null;
   const boardQuery = useSprintBoard(activeSprint?.id ?? '');
@@ -258,7 +259,9 @@ export default function BoardPage() {
   const currentSummary =
     summaryResult?.sprintId === sprint.id
       ? summaryResult.summary
-      : sprint.summary;
+      : sprint.summary?.source === 'ai'
+        ? sprint.summary
+        : null;
 
   async function handleUpdateTodo(data: UpdateTodoRequest) {
     if (!selectedTodo) return;
@@ -304,12 +307,11 @@ export default function BoardPage() {
     setSummaryDialogOpen(true);
     setSummaryPending(true);
     try {
-      const response = await summarizeSprint(sprint.id);
+      const response = await summarizeMutation.mutateAsync({
+        projectId,
+        sprintId: sprint.id,
+      });
       setSummaryResult({ sprintId: sprint.id, summary: response.summary });
-      await Promise.all([
-        boardQuery.refetch(),
-        sprintsQuery.refetch(),
-      ]);
     } catch (error) {
       setSummaryError(
         error instanceof Error ? error.message : 'Unable to summarize this sprint.'

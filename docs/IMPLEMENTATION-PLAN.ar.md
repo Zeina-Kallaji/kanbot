@@ -28,7 +28,7 @@ npm run smoke             # optional: tests every endpoint on a throwaway DB
 ```
 
 ### 1.1 الذكاء الاصطناعي: وضع المحاكاة (mock) أو الحقيقي
-- **المحاكاة (الافتراضي).** عندما يكون `AI_API_KEY` فارغًا، يجيب مساعد مدمج قائم على القواعد فورًا، ومجانًا، ودون اتصال بالإنترنت. كل نقطة نهاية (endpoint) للذكاء الاصطناعي تُرجع نفس شكل الـ JSON كما مع نموذج حقيقي، مع `"source": "mock"`. ابنِ التطبيق كاملًا في وضع المحاكاة.
+- **المحاكاة (الافتراضي).** عندما يكون `AI_API_KEY` فارغًا، تستخدم معظم ميزات الذكاء الاصطناعي مساعدًا مدمجًا قائمًا على القواعد. استثناءً من ذلك، يُرجع توليد ملخص السبرنت `502 AI_ERROR` ولا يحفظ مخرجات وهمية.
 - **الحقيقي.** ضع مفتاحًا من مزوّد مجاني في `.env`. يتواصل الخادم مع أي API متوافقة مع OpenAI:
 
   ```env
@@ -234,7 +234,7 @@ erDiagram
 | POST | `/projects/:projectId/ai/chat` | `ChatRequest` ← `ChatResponse` | AI-1 |
 | POST | `/projects/:projectId/ai/generate-todos` | `GenerateTodosRequest` ← `GenerateTodosResponse` | AI-2 |
 | POST | `/projects/:projectId/ai/plan-sprint` | `PlanSprintRequest` ← `PlanSprintResponse` | AI-3 |
-| POST | `/sprints/:sprintId/ai/summary` | ← `SprintSummaryResponse` (يُحفظ على السبرنت) | AI-4 |
+| POST | `/sprints/:sprintId/ai/summary` | `{ projectId }` ← `SprintSummaryResponse` (ذكاء اصطناعي حقيقي؛ يُحفظ على السبرنت) | AI-4 |
 
 ### 4.4 تفاصيل نقاط النهاية وأمثلة
 
@@ -328,10 +328,12 @@ POST /api/projects/:projectId/ai/plan-sprint
 يضمن الخادم أن `todoIds` معرّفات حقيقية من قائمة المهام المؤجلة وأن `totalPoints ≤ capacity`. اعرض المهام المطابقة من الذاكرة المؤقتة لقائمة المهام المؤجلة لديك. أنشئ السبرنت عبر `POST /projects/:id/sprints { goal, todoIds }`.
 
 ```http
-POST /api/sprints/:sprintId/ai/summary          // سبرنت نشط أو مكتمل (المخطط له → 409)
+POST /api/sprints/:sprintId/ai/summary          // سبرنت نشط أو مكتمل؛ projectId مطلوب في الطلب؛ المخطط له → 409
+{ "projectId": "…" }
 200 { "sprint": { …, "summary": { "content": "## Sprint 1 summary …", "source": "ai", "generatedAt": "…" } },
       "summary": { "content": "…markdown…", "source": "ai", "generatedAt": "…" } }
 ```
+على عكس ميزات الذكاء الاصطناعي الأخرى، تتطلب ملخصات السبرنت إعداد ذكاء اصطناعي حقيقي. عند تعطيل الذكاء الاصطناعي، تُرجع نقطة النهاية `502 AI_ERROR` ولا تحفظ ملخصًا وهميًا.
 
 ```http
 POST /api/projects/:projectId/ai/chat

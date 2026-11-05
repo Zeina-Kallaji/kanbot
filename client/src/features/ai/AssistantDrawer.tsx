@@ -203,7 +203,8 @@ function AssistantDrawer({
     regenerate = false
   ) {
     const savedSummary = sprints.find((sprint) => sprint.id === sprintId)?.summary;
-    if (savedSummary && !regenerate) {
+    const savedAiSummary = savedSummary?.source === 'ai' ? savedSummary : null;
+    if (savedAiSummary && !regenerate) {
       if (addPrompt) {
         setMessages((current) => [
           ...current,
@@ -214,7 +215,7 @@ function AssistantDrawer({
         ...current,
         {
           role: 'assistant',
-          content: `${savedSummary.content}\n\n_Generated ${new Date(savedSummary.generatedAt).toLocaleString()}._`,
+          content: `${savedAiSummary.content}\n\n_Generated ${new Date(savedAiSummary.generatedAt).toLocaleString()}._`,
         },
       ]);
       return;
@@ -230,7 +231,7 @@ function AssistantDrawer({
       ]);
     }
     try {
-      const response = await summarizeSprint(sprintId);
+      const response = await summarizeSprint(projectId, sprintId);
       setMessages((current) => [
         ...current,
         {

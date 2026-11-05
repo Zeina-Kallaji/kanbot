@@ -304,7 +304,12 @@ export interface PlanSprintResponse {
   source: AiSource;
 }
 
-/** POST /sprints/:sprintId/ai/summary — works for active and completed sprints. Saves to `sprint.summary`. */
+/** POST /sprints/:sprintId/ai/summary — projectId must match the sprint's project. */
+export interface SprintSummaryRequest {
+  projectId: string;
+}
+
+/** Works for active and completed sprints. Saves to `sprint.summary`. */
 export interface SprintSummaryResponse {
   sprint: Sprint;
   summary: SprintSummary;

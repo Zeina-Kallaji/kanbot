@@ -196,7 +196,7 @@ await step('ai: status, generate todos, plan sprint, chat (mock)', async () => {
   assert.equal((await call('POST', `/projects/${projectId}/ai/chat`, { messages: [{ role: 'assistant', content: 'hi' }] })).status, 400);
 });
 
-await step('sprints: complete → unfinished to next sprint, summary, read-only', async () => {
+await step('sprints: complete → unfinished to next sprint, require real summary AI', async () => {
   assert.equal((await call('POST', `/sprints/${sprintId}/complete`, { moveUnfinishedTo: 'nope' })).status, 400);
   const r = await call('POST', `/sprints/${sprintId}/complete`, { moveUnfinishedTo: nextSprintId });
   assert.equal(r.status, 200);
@@ -205,11 +205,13 @@ await step('sprints: complete → unfinished to next sprint, summary, read-only'
   assert.equal(r.json.sprint.completedStats.doneTodos, 1);
   assert.equal((await call('GET', `/sprints/${nextSprintId}/todos`)).json.sprint.stats.totalTodos, 3);
   assert.equal((await call('POST', `/todos/${ids[2]}/move`, { status: 'todo', position: 0 })).status, 409);
-  const sum = await call('POST', `/sprints/${sprintId}/ai/summary`);
-  assert.equal(sum.status, 200);
-  assert.match(sum.json.summary.content, /Highlights/);
-  assert.equal(sum.json.sprint.summary.content, sum.json.summary.content);
-  assert.equal((await call('POST', `/sprints/${nextSprintId}/ai/summary`)).status, 409);
+  const sum = await call('POST', `/sprints/${sprintId}/ai/summary`, { projectId });
+  assert.equal(sum.status, 502);
+  assert.equal(sum.json.error.code, 'AI_ERROR');
+  assert.match(sum.json.error.message, /Real AI is not configured/);
+  assert.equal((await call('GET', `/sprints/${sprintId}/todos`)).json.sprint.summary, null);
+  assert.equal((await call('POST', `/sprints/${sprintId}/ai/summary`, { projectId: 'wrong-project' })).status, 404);
+  assert.equal((await call('POST', `/sprints/${nextSprintId}/ai/summary`, { projectId })).status, 409);
   const sprints = await call('GET', `/projects/${projectId}/sprints`);
   assert.deepEqual(sprints.json.sprints.map((s: { status: string }) => s.status), ['planned', 'completed']);
 });
