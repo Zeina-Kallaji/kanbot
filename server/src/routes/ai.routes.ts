@@ -52,11 +52,17 @@ aiRouter.post('/projects/:projectId/ai/plan-sprint', aiLimiter, async (req, res)
   const body = parse(
     z.object({
       capacity: z.number().int('Capacity must be a whole number').min(1).max(200),
+      sprintLengthWeeks: z.number().int().min(1).max(4).default(2),
       focus: z.string().trim().max(300).optional(),
     }),
     req.body,
   );
-  const plan = await planSprint(project, body.capacity, body.focus || undefined);
+  const plan = await planSprint(
+    project,
+    body.capacity,
+    body.sprintLengthWeeks,
+    body.focus || undefined
+  );
   res.json({ ...plan, source: aiSource() } satisfies PlanSprintResponse);
 });
 

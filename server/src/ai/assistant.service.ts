@@ -139,26 +139,40 @@ const planSchema = z.object({
   reasoning: z.string().max(2000).catch(''),
 });
 
-export async function planSprint(project: ProjectRecord, capacity: number, focus?: string): Promise<SprintPlan> {
+export async function planSprint(
+  project: ProjectRecord,
+  capacity: number,
+  sprintLengthWeeks: number,
+  focus?: string
+): Promise<SprintPlan> {
   const backlog = backlogOf(project.id);
   if (backlog.length === 0) {
-    return { goal: focus ?? '', todoIds: [], totalPoints: 0, reasoning: 'The backlog is empty. Add some todos first.' };
+    return {
+      goal: focus ?? '',
+      todoIds: [],
+      totalPoints: 0,
+      reasoning: `The backlog is empty. Add some todos before planning this ${sprintLengthWeeks}-week sprint.`,
+    };
   }
-  if (!env.aiEnabled) return mockPlanSprint(backlog, capacity, focus);
+  if (!env.aiEnabled) return mockPlanSprint(backlog, capacity, sprintLengthWeeks, focus);
 
   const reply = await complete([
     {
       role: 'system',
       content:
         'You are an agile coach helping one developer plan their next sprint. Pick backlog todos for the sprint so that the sum of ' +
-        `storyPoints does not exceed the capacity of ${capacity} points. Prefer higher priority, bugs, and todos that fit the focus. ` +
+        `storyPoints does not exceed the capacity of ${capacity} points. The sprint lasts ${sprintLengthWeeks} weeks; tailor the scope, goal, and delivery approach to that time horizon without exceeding the point capacity. ` +
+        'Prefer higher priority, bugs, and todos that fit the focus. ' +
         'Use the exact todo ids from the backlog list (the value after "id:"). ' +
         'Reply with JSON only: {"goal": string (one sentence sprint goal), "todoIds": string[] (in suggested order), "reasoning": string (2–4 sentences)}.',
     },
-    { role: 'user', content: `${projectContext(project)}\n\nCapacity: ${capacity} points.${focus ? `\nFocus: ${focus}` : ''}` },
+    {
+      role: 'user',
+      content: `${projectContext(project)}\n\nCapacity: ${capacity} points for a ${sprintLengthWeeks}-week sprint.${focus ? `\nFocus: ${focus}` : ''}`,
+    },
   ]);
   const parsed = planSchema.safeParse(extractJson(reply));
-  if (!parsed.success) return mockPlanSprint(backlog, capacity, focus);
+  if (!parsed.success) return mockPlanSprint(backlog, capacity, sprintLengthWeeks, focus);
 
   // Never trust ids or math from the model: keep valid backlog ids, enforce capacity.
   const byId = new Map(backlog.map((t) => [t.id, t]));
@@ -178,9 +192,19 @@ export async function planSprint(project: ProjectRecord, capacity: number, focus
   };
 }
 
-function mockPlanSprint(backlog: TodoRecord[], capacity: number, focus?: string): SprintPlan {
+function mockPlanSprint(
+  backlog: TodoRecord[],
+  capacity: number,
+  sprintLengthWeeks: number,
+  focus?: string
+): SprintPlan {
   const words = (focus ?? '').toLowerCase().split(/\W+/).filter((w) => w.length > 3);
   const matchesFocus = (t: TodoRecord) => words.some((w) => `${t.title} ${t.description} ${t.labels.join(' ')}`.toLowerCase().includes(w));
+  const durationTieBreak = (a: TodoRecord, b: TodoRecord) => {
+    if (sprintLengthWeeks === 1) return (a.storyPoints ?? 0) - (b.storyPoints ?? 0);
+    if (sprintLengthWeeks >= 3) return (b.storyPoints ?? 0) - (a.storyPoints ?? 0);
+    return 0;
+  };
   const ranked = backlog
     .filter((t) => t.storyPoints !== null)
     .sort(
@@ -188,6 +212,7 @@ function mockPlanSprint(backlog: TodoRecord[], capacity: number, focus?: string)
         Number(matchesFocus(b)) - Number(matchesFocus(a)) ||
         PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] ||
         Number(b.type === 'bug') - Number(a.type === 'bug') ||
+        durationTieBreak(a, b) ||
         byOrder(a, b),
     );
   const picked: TodoRecord[] = [];
@@ -208,8 +233,8 @@ function mockPlanSprint(backlog: TodoRecord[], capacity: number, focus?: string)
     totalPoints: total,
     reasoning:
       (picked.length
-        ? `Picked ${picked.length} todos (${counts}) by priority${words.length ? ' and focus' : ''}, bugs first, for ${total} of ${capacity} points.`
-        : `No estimated todo fits in ${capacity} points.`) +
+        ? `Picked ${picked.length} todos (${counts}) by priority${words.length ? ' and focus' : ''}, bugs first, for ${total} of ${capacity} points in a ${sprintLengthWeeks}-week sprint.`
+        : `No estimated todo fits in ${capacity} points for a ${sprintLengthWeeks}-week sprint.`) +
       (unestimated ? ` ${unestimated} todo(s) without story points were skipped — estimate them to include them.` : ''),
   };
 }

@@ -320,7 +320,7 @@ POST /api/projects/:projectId/ai/generate-todos
 
 ```http
 POST /api/projects/:projectId/ai/plan-sprint
-{ "capacity": 20, "focus": "AI features" }
+{ "capacity": 20, "sprintLengthWeeks": 2, "focus": "AI features" }
 
 200 { "source": "mock", "goal": "AI features", "todoIds": ["…", "…"], "totalPoints": 18,
       "reasoning": "Picked 5 todos (2 high, 3 medium) by priority and focus, bugs first, for 18 of 20 points." }

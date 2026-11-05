@@ -21,6 +21,7 @@ import {
   FormControl,
   IconButton,
   InputLabel,
+  LinearProgress,
   MenuItem,
   Select,
   Stack,
@@ -73,6 +74,32 @@ interface DraftItem {
 const todoTypes: TodoType[] = ['task', 'story', 'bug'];
 const priorities: TodoPriority[] = ['low', 'medium', 'high', 'urgent'];
 const storyPoints: (StoryPoints | '')[] = ['', 1, 2, 3, 5, 8, 13];
+const sprintLengthOptions = [1, 2, 3, 4];
+const planFieldSx = {
+  overflow: 'visible',
+  '& .MuiOutlinedInput-root': {
+    overflow: 'visible',
+    borderRadius: 1,
+    '& .MuiOutlinedInput-notchedOutline': {
+      overflow: 'visible',
+      borderColor: 'divider',
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'text.secondary',
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#2c5282',
+      borderWidth: 2,
+    },
+  },
+  '& .MuiInputLabel-root': {
+    overflow: 'visible',
+    color: 'text.secondary',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: '#2c5282',
+  },
+};
 
 const AssistantDrawer = forwardRef<AssistantDrawerHandle, AssistantDrawerProps>(
 function AssistantDrawer({
@@ -98,9 +125,11 @@ function AssistantDrawer({
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [planOpen, setPlanOpen] = useState(false);
   const [capacity, setCapacity] = useState('21');
+  const [sprintLengthWeeks, setSprintLengthWeeks] = useState(2);
   const [focus, setFocus] = useState('');
   const [planPending, setPlanPending] = useState(false);
   const [planError, setPlanError] = useState<string | null>(null);
+  const [planErrorAction, setPlanErrorAction] = useState<'suggest' | 'create'>('suggest');
   const [plan, setPlan] = useState<Awaited<ReturnType<typeof planSprint>> | null>(null);
   const [selectedTodoIds, setSelectedTodoIds] = useState<string[]>([]);
   const [planGoal, setPlanGoal] = useState('');
@@ -275,9 +304,11 @@ function AssistantDrawer({
     }
     setPlanPending(true);
     setPlanError(null);
+    setPlanErrorAction('suggest');
     try {
       const response = await planSprint(projectId, {
         capacity: parsedCapacity,
+        sprintLengthWeeks,
         ...(focus.trim() ? { focus: focus.trim() } : {}),
       });
       setPlan(response);
@@ -294,6 +325,7 @@ function AssistantDrawer({
     if (!plan || createSprintPending) return;
     setCreateSprintPending(true);
     setPlanError(null);
+    setPlanErrorAction('create');
     try {
       const nextNumber = sprints.length + 1;
       await sprintMutations.create.mutateAsync({
@@ -342,6 +374,21 @@ function AssistantDrawer({
         .reduce((total, todo) => total + (todo.storyPoints ?? 0), 0),
     [backlogTodos, selectedTodoIds]
   );
+  const parsedCapacity = Number(capacity);
+  const capacityIsValid =
+    Number.isInteger(parsedCapacity) && parsedCapacity >= 1 && parsedCapacity <= 200;
+  const plannedBacklogTodos = useMemo(() => {
+    if (!plan) return [];
+    const suggestedOrder = new Map(plan.todoIds.map((todoId, index) => [todoId, index]));
+    return [...backlogTodos].sort((a, b) => {
+      const aIndex = suggestedOrder.get(a.id);
+      const bIndex = suggestedOrder.get(b.id);
+      if (aIndex !== undefined && bIndex !== undefined) return aIndex - bIndex;
+      if (aIndex !== undefined) return -1;
+      if (bIndex !== undefined) return 1;
+      return a.order - b.order;
+    });
+  }, [backlogTodos, plan]);
   const selectedDraftCount = drafts.filter((item) => item.selected).length;
 
   return (
@@ -737,16 +784,58 @@ function AssistantDrawer({
         open={planOpen}
         onClose={planPending || createSprintPending ? undefined : () => setPlanOpen(false)}
         fullWidth
-        maxWidth="sm"
+        maxWidth="lg"
+        slotProps={{
+          paper: {
+            sx: {
+              width: 'min(980px, calc(100vw - 32px))',
+              maxWidth: 'none',
+              borderRadius: 2,
+            },
+          },
+        }}
       >
-        <DialogTitle>Plan sprint</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: { xs: 2, sm: 3 },
+            py: 2,
+            borderBottom: 1,
+            borderColor: 'divider',
+          }}
+        >
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', color: 'primary.main' }}>
+            <AutoAwesomeOutlined fontSize="small" />
+            <Typography component="span" variant="h2" color="text.primary">
+              Plan sprint with AI
+            </Typography>
+          </Stack>
+          <IconButton
+            aria-label="Close sprint planner"
+            onClick={() => setPlanOpen(false)}
+            disabled={planPending || createSprintPending}
+            size="small"
+          >
+            <CloseOutlined />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ px: { xs: 2, sm: 3 }, pt: 2.5, pb: 2.5 }}>
+          <Stack spacing={2.5}>
             {planError && (
               <Alert
                 severity="error"
                 action={
-                  <Button color="inherit" size="small" onClick={() => void (plan ? handleCreatePlannedSprint() : handlePlan())}>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() =>
+                      void (planErrorAction === 'create'
+                        ? handleCreatePlannedSprint()
+                        : handlePlan())
+                    }
+                  >
                     Try again
                   </Button>
                 }
@@ -754,83 +843,277 @@ function AssistantDrawer({
                 {planError}
               </Alert>
             )}
-            <TextField
-              label="Capacity (story points)"
-              type="number"
-              required
-              value={capacity}
-              onChange={(event) => setCapacity(event.target.value)}
-              slotProps={{ htmlInput: { min: 1, max: 200, step: 1 } }}
-              disabled={planPending || Boolean(plan)}
-            />
-            <TextField
-              label="Focus (optional)"
-              value={focus}
-              onChange={(event) => setFocus(event.target.value)}
-              slotProps={{ htmlInput: { maxLength: 300 } }}
-              disabled={planPending || Boolean(plan)}
-            />
-            {!plan && (
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'minmax(0, 1fr)',
+                  sm: 'repeat(2, minmax(0, 1fr))',
+                  lg: 'minmax(150px, 0.9fr) minmax(145px, 0.8fr) minmax(220px, 2fr) auto',
+                },
+                gap: 1.5,
+                alignItems: 'end',
+                overflow: 'visible',
+                pt: 2,
+              }}
+            >
+              <TextField
+                label="Capacity (story points)"
+                type="number"
+                required
+                fullWidth
+                value={capacity}
+                onChange={(event) => setCapacity(event.target.value)}
+                slotProps={{ htmlInput: { min: 1, max: 200, step: 1 } }}
+                disabled={planPending || createSprintPending}
+                sx={planFieldSx}
+              />
+              <FormControl
+                fullWidth
+                disabled={planPending || createSprintPending}
+                sx={planFieldSx}
+              >
+                <InputLabel id="sprint-length-label">Sprint Length</InputLabel>
+                <Select
+                  labelId="sprint-length-label"
+                  label="Sprint Length"
+                  value={sprintLengthWeeks}
+                  onChange={(event) => setSprintLengthWeeks(Number(event.target.value))}
+                >
+                  {sprintLengthOptions.map((weeks) => (
+                    <MenuItem key={weeks} value={weeks}>
+                      {weeks} {weeks === 1 ? 'week' : 'weeks'}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                label="Focus / goal (optional)"
+                value={focus}
+                fullWidth
+                onChange={(event) => setFocus(event.target.value)}
+                slotProps={{ htmlInput: { maxLength: 300 } }}
+                disabled={planPending || createSprintPending}
+                sx={planFieldSx}
+              />
               <Button
                 variant="contained"
                 onClick={() => void handlePlan()}
-                disabled={planPending}
+                disabled={planPending || createSprintPending}
                 startIcon={planPending ? <CircularProgress size={16} /> : <AutoAwesomeOutlined />}
+                sx={{ minHeight: 40, whiteSpace: 'nowrap' }}
               >
                 Suggest plan
               </Button>
-            )}
+            </Box>
             {plan && (
-              <>
+              <Stack spacing={2} sx={{ pt: 0.5 }}>
+                <Divider />
                 <TextField
                   label="Suggested sprint goal"
                   value={planGoal}
+                  fullWidth
                   onChange={(event) => setPlanGoal(event.target.value)}
+                  disabled={createSprintPending}
                 />
-                <Typography variant="body2" color="text.secondary">
-                  {plan.reasoning}
-                </Typography>
-                {backlogQuery.isLoading ? (
-                  <CircularProgress size={22} />
-                ) : backlogQuery.error ? (
-                  <Alert severity="error">{backlogQuery.error.message}</Alert>
-                ) : backlogTodos.length === 0 ? (
-                  <Typography color="text.secondary">The backlog is empty.</Typography>
-                ) : (
-                  <Stack spacing={0.5}>
-                    {backlogTodos
-                      .filter((todo) => plan.todoIds.includes(todo.id))
-                      .map((todo: Todo) => (
-                        <Stack key={todo.id} direction="row" sx={{ alignItems: 'center' }}>
-                          <Checkbox
-                            checked={selectedTodoIds.includes(todo.id)}
-                            onChange={() => toggleTodo(todo.id)}
-                            slotProps={{ input: { 'aria-label': `Include ${todo.title}` } }}
-                          />
-                          <Typography variant="body2" sx={{ flex: 1 }}>
-                            {todo.title}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: 'minmax(0, 1fr)',
+                      md: 'minmax(0, 1.6fr) minmax(260px, 1fr)',
+                    },
+                    gap: 2,
+                    alignItems: 'stretch',
+                  }}
+                >
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, color: 'primary.dark', fontWeight: 600 }}
+                    >
+                      Selected backlog todos
+                    </Typography>
+                    {backlogQuery.isLoading ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress size={22} />
+                      </Box>
+                    ) : backlogQuery.error ? (
+                      <Alert severity="error">{backlogQuery.error.message}</Alert>
+                    ) : plannedBacklogTodos.length === 0 ? (
+                      <Box
+                        sx={{
+                          p: 2,
+                          border: 1,
+                          borderColor: 'divider',
+                          borderRadius: 1,
+                          bgcolor: 'background.paper',
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          The backlog is empty.
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{
+                          maxHeight: { xs: 240, sm: 320 },
+                          overflowY: 'auto',
+                          border: 1,
+                          borderColor: 'divider',
+                          borderRadius: 1,
+                        }}
+                      >
+                        {plannedBacklogTodos.map((todo: Todo, index) => (
+                          <Stack
+                            key={todo.id}
+                            direction="row"
+                            spacing={1}
+                            sx={{
+                              minHeight: 44,
+                              px: 1,
+                              alignItems: 'center',
+                              borderBottom:
+                                index < plannedBacklogTodos.length - 1 ? 1 : 0,
+                              borderColor: 'divider',
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={selectedTodoIds.includes(todo.id)}
+                              onChange={() => toggleTodo(todo.id)}
+                              disabled={createSprintPending}
+                              slotProps={{ input: { 'aria-label': `Include ${todo.title}` } }}
+                              sx={{ p: 0.5, color: 'primary.main' }}
+                            />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ flexShrink: 0 }}
+                            >
+                              {todo.key}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}
+                            >
+                              {todo.title}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                flexShrink: 0,
+                                px: 0.75,
+                                py: 0.25,
+                                borderRadius: 1,
+                                bgcolor: 'secondary.soft',
+                                color: 'text.secondary',
+                              }}
+                            >
+                              {todo.storyPoints ?? 0} pts
+                            </Typography>
+                          </Stack>
+                        ))}
+                        <Stack
+                          direction={{ xs: 'column', sm: 'row' }}
+                          spacing={1.5}
+                          sx={{
+                            px: 1.5,
+                            py: 1.25,
+                            alignItems: { xs: 'stretch', sm: 'center' },
+                            bgcolor: 'background.default',
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{ flexShrink: 0, fontWeight: 600 }}
+                          >
+                            Total
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {todo.storyPoints ?? 0} pts
+                          <LinearProgress
+                            variant="determinate"
+                            value={
+                              capacityIsValid
+                                ? Math.min((selectedPlanPoints / parsedCapacity) * 100, 100)
+                                : 0
+                            }
+                            sx={{
+                              flex: 1,
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: 'action.hover',
+                              '& .MuiLinearProgress-bar': {
+                                borderRadius: 3,
+                                bgcolor:
+                                  selectedPlanPoints > parsedCapacity
+                                    ? 'error.main'
+                                    : 'primary.main',
+                              },
+                            }}
+                          />
+                          <Typography
+                            variant="body2"
+                            sx={{ flexShrink: 0, fontWeight: 600 }}
+                          >
+                            {selectedPlanPoints} / {parsedCapacity || 0} pts
                           </Typography>
                         </Stack>
-                      ))}
-                  </Stack>
-                )}
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {selectedPlanPoints} / {capacity} points selected
-                </Typography>
-                {selectedPlanPoints > Number(capacity) && (
+                      </Box>
+                    )}
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, color: 'primary.dark', fontWeight: 600 }}
+                    >
+                      Why this plan?
+                    </Typography>
+                    <Box
+                      sx={{
+                        height: { xs: 'auto', md: 'calc(100% - 28px)' },
+                        minHeight: 180,
+                        p: 2,
+                        border: 1,
+                        borderColor: 'primary.light',
+                        borderRadius: 1,
+                        bgcolor: 'primary.soft',
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        color="text.primary"
+                        sx={{ whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
+                      >
+                        {plan.reasoning}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+                {selectedPlanPoints > parsedCapacity && (
                   <Alert severity="warning">
                     Selected todos exceed the sprint capacity. Remove todos before creating the sprint.
                   </Alert>
                 )}
-              </>
+              </Stack>
             )}
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setPlanOpen(false)} disabled={planPending || createSprintPending}>Cancel</Button>
+        <DialogActions
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            borderTop: 1,
+            borderColor: 'divider',
+            flexWrap: 'wrap',
+            gap: 1,
+          }}
+        >
+          <Button
+            onClick={() => setPlanOpen(false)}
+            disabled={planPending || createSprintPending}
+            sx={{ flex: { xs: 1, sm: 'initial' } }}
+          >
+            Cancel
+          </Button>
           {plan && (
             <Button
               variant="contained"
@@ -838,9 +1121,11 @@ function AssistantDrawer({
               disabled={
                 createSprintPending ||
                 selectedTodoIds.length === 0 ||
-                selectedPlanPoints > Number(capacity)
+                !capacityIsValid ||
+                selectedPlanPoints > parsedCapacity
               }
               startIcon={createSprintPending ? <CircularProgress size={16} /> : <AddOutlined />}
+              sx={{ flex: { xs: 1, sm: 'initial' }, bgcolor: 'primary.main' }}
             >
               Create sprint with {selectedTodoIds.length} todos
             </Button>

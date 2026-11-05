@@ -161,10 +161,35 @@ await step('ai: status, generate todos, plan sprint, chat (mock)', async () => {
   assert.equal(list.json.todos.length, 3);
   assert.equal(list.json.todos[1].type, 'bug');
   assert.equal((await call('POST', `/projects/${projectId}/ai/generate-todos`, { prompt: '' })).status, 400);
-  const plan = await call('POST', `/projects/${projectId}/ai/plan-sprint`, { capacity: 5 });
-  assert.equal(plan.status, 200);
-  assert.ok(plan.json.totalPoints <= 5);
-  assert.ok(plan.json.reasoning.length > 0);
+  const shortTodo = await call('POST', `/projects/${projectId}/todos`, { title: 'Small polish', storyPoints: 2 });
+  const longTodo = await call('POST', `/projects/${projectId}/todos`, { title: 'Feature slice', storyPoints: 5 });
+  const shortPlan = await call('POST', `/projects/${projectId}/ai/plan-sprint`, {
+    capacity: 5,
+    sprintLengthWeeks: 1,
+  });
+  const longPlan = await call('POST', `/projects/${projectId}/ai/plan-sprint`, {
+    capacity: 5,
+    sprintLengthWeeks: 4,
+  });
+  assert.equal(shortPlan.status, 200);
+  assert.equal(longPlan.status, 200);
+  assert.deepEqual(shortPlan.json.todoIds, [shortTodo.json.todo.id]);
+  assert.deepEqual(longPlan.json.todoIds, [longTodo.json.todo.id]);
+  assert.ok(shortPlan.json.totalPoints <= 5);
+  assert.match(shortPlan.json.reasoning, /1-week sprint/);
+  assert.match(longPlan.json.reasoning, /4-week sprint/);
+  assert.equal(
+    (await call('POST', `/projects/${projectId}/ai/plan-sprint`, {
+      capacity: 5,
+      sprintLengthWeeks: 5,
+    })).status,
+    400,
+  );
+  const defaultPlan = await call('POST', `/projects/${projectId}/ai/plan-sprint`, { capacity: 5 });
+  assert.equal(defaultPlan.status, 200);
+  assert.match(defaultPlan.json.reasoning, /2-week sprint/);
+  assert.equal((await call('DELETE', `/todos/${shortTodo.json.todo.id}`)).status, 204);
+  assert.equal((await call('DELETE', `/todos/${longTodo.json.todo.id}`)).status, 204);
   const chat = await call('POST', `/projects/${projectId}/ai/chat`, { messages: [{ role: 'user', content: 'How is the sprint going?' }] });
   assert.equal(chat.json.message.role, 'assistant');
   assert.match(chat.json.message.content, /Sprint 1/);

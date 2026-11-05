@@ -292,6 +292,7 @@ export interface GenerateTodosResponse {
 /** POST /projects/:projectId/ai/plan-sprint — suggests which backlog todos to pull into the next sprint. */
 export interface PlanSprintRequest {
   capacity: number; // story points the user can do, 1–200
+  sprintLengthWeeks: number; // sprint duration, 1–4 weeks
   focus?: string; // optional goal / theme, ≤ 300 chars
 }
 
