@@ -19,7 +19,12 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   LinearProgress,
   Paper,
   Stack,
@@ -29,10 +34,14 @@ import {
   ArrowBackOutlined,
   AutoAwesomeOutlined,
   CheckCircleOutlined,
+  ReplayOutlined,
 } from '@mui/icons-material';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
+import { summarizeSprint } from '../../api/ai';
 import type {
   CompleteSprintRequest,
+  SprintSummary,
   Todo,
   TodoStatus,
   UpdateTodoRequest,
@@ -175,6 +184,13 @@ export default function BoardPage() {
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   const [boardError, setBoardError] = useState<string | null>(null);
+  const [summaryPending, setSummaryPending] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summaryResult, setSummaryResult] = useState<{
+    sprintId: string;
+    summary: SprintSummary;
+  } | null>(null);
+  const [summaryDialogOpen, setSummaryDialogOpen] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [detailsFieldErrors, setDetailsFieldErrors] =
     useState<Record<string, string>>({});
@@ -239,6 +255,10 @@ export default function BoardPage() {
       ? (sprint.stats.donePoints / sprint.stats.totalPoints) * 100
       : 0;
   const plannedSprints = sprints.filter((item) => item.status === 'planned');
+  const currentSummary =
+    summaryResult?.sprintId === sprint.id
+      ? summaryResult.summary
+      : sprint.summary;
 
   async function handleUpdateTodo(data: UpdateTodoRequest) {
     if (!selectedTodo) return;
@@ -272,6 +292,31 @@ export default function BoardPage() {
     });
     setCompleteDialogOpen(false);
     navigate(`/projects/${projectId}/backlog`);
+  }
+
+  async function handleSummarizeSprint(regenerate = false) {
+    setSummaryError(null);
+    if (currentSummary && !regenerate) {
+      setSummaryDialogOpen(true);
+      return;
+    }
+
+    setSummaryDialogOpen(true);
+    setSummaryPending(true);
+    try {
+      const response = await summarizeSprint(sprint.id);
+      setSummaryResult({ sprintId: sprint.id, summary: response.summary });
+      await Promise.all([
+        boardQuery.refetch(),
+        sprintsQuery.refetch(),
+      ]);
+    } catch (error) {
+      setSummaryError(
+        error instanceof Error ? error.message : 'Unable to summarize this sprint.'
+      );
+    } finally {
+      setSummaryPending(false);
+    }
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -349,10 +394,14 @@ export default function BoardPage() {
                 variant="outlined"
                 size="small"
                 startIcon={<AutoAwesomeOutlined />}
-                disabled
-                title="Sprint summaries are not available yet."
+                onClick={() => void handleSummarizeSprint()}
+                disabled={summaryPending}
               >
-                Summarize
+                {summaryPending
+                  ? 'Summarizing…'
+                  : currentSummary
+                    ? 'View summary'
+                    : 'Summarize'}
               </Button>
               {isActiveSprint && (
                 <Button
@@ -455,6 +504,64 @@ export default function BoardPage() {
         onClose={() => setCompleteDialogOpen(false)}
         onSubmit={handleCompleteSprint}
       />
+      <Dialog
+        open={summaryDialogOpen}
+        onClose={() => setSummaryDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>{sprint.name} summary</DialogTitle>
+        <DialogContent>
+          <Stack spacing={1.5} sx={{ pt: 1 }}>
+            {summaryPending && (
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <CircularProgress size={20} />
+                <Typography color="text.secondary">Generating sprint summary…</Typography>
+              </Stack>
+            )}
+            {summaryError && (
+              <Alert
+                severity="error"
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => void handleSummarizeSprint(true)}
+                  >
+                    Try again
+                  </Button>
+                }
+              >
+                {summaryError}
+              </Alert>
+            )}
+            {currentSummary && (
+              <>
+                <Typography variant="caption" color="text.secondary">
+                  Generated {new Date(currentSummary.generatedAt).toLocaleString()}
+                  {currentSummary.source === 'mock' ? ' · Mock AI' : ''}
+                </Typography>
+                <Box sx={{ '& p': { my: 1 }, '& ul, & ol': { pl: 3 } }}>
+                  <ReactMarkdown>{currentSummary.content}</ReactMarkdown>
+                </Box>
+              </>
+            )}
+            <Typography variant="caption" color="text.secondary">
+              AI can make mistakes. Review before sharing or acting on this summary.
+            </Typography>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+          <Button
+            startIcon={summaryPending ? <CircularProgress size={16} /> : <ReplayOutlined />}
+            onClick={() => void handleSummarizeSprint(true)}
+            disabled={summaryPending}
+          >
+            Regenerate
+          </Button>
+          <Button onClick={() => setSummaryDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

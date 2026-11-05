@@ -57,6 +57,7 @@ import SprintDialog from './components/SprintDialog';
 import SprintSection from './components/SprintSection';
 import TodoDetailsDialog from './components/TodoDetailsDialog';
 import TodoFilters from './components/TodoFilters';
+import { useAssistantActions } from '../ai/AssistantContext';
 
 const sprintStatuses: TodoStatus[] = [
   'todo',
@@ -90,6 +91,7 @@ export default function BacklogPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const validProjectId = projectId ?? '';
   const navigate = useNavigate();
+  const assistantActions = useAssistantActions();
 
   const [search, setSearch] = useState('');
   const [priority, setPriority] = useState<TodoPriority | ''>('');
@@ -440,6 +442,7 @@ export default function BacklogPage() {
       <BacklogHeader
         totalTasks={allTodos.length}
         totalPoints={totalPoints}
+        onAskAI={assistantActions.openAssistant}
       />
 
       {pageError && (
@@ -475,8 +478,7 @@ export default function BacklogPage() {
             sx={{ flex: { xs: '1 1 100%', sm: '0 1 auto' } }}
             variant="outlined"
             startIcon={<AutoAwesomeOutlined />}
-            disabled
-            title="AI generation is not available yet."
+            onClick={assistantActions.openGenerateTodos}
           >
             Generate todos with AI
           </Button>
@@ -484,8 +486,7 @@ export default function BacklogPage() {
             sx={{ flex: { xs: '1 1 100%', sm: '0 1 auto' } }}
             variant="outlined"
             startIcon={<BoltOutlined />}
-            disabled
-            title="AI sprint planning is not available yet."
+            onClick={assistantActions.openPlanSprint}
           >
             Plan sprint with AI
           </Button>
@@ -577,8 +578,7 @@ export default function BacklogPage() {
                   <Button
                     variant="outlined"
                     startIcon={<AutoAwesomeOutlined />}
-                    disabled
-                    title="AI generation is not available yet."
+                    onClick={assistantActions.openGenerateTodos}
                   >
                     Generate todos with AI
                   </Button>

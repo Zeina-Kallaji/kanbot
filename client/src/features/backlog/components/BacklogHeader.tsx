@@ -6,11 +6,13 @@ import { AutoAwesomeOutlined } from '@mui/icons-material';
 interface BacklogHeaderProps {
   totalTasks: number;
   totalPoints: number;
+  onAskAI: () => void;
 }
 
 export default function BacklogHeader({
   totalTasks,
   totalPoints,
+  onAskAI,
 }: BacklogHeaderProps) {
   return (
     <Box
@@ -38,8 +40,7 @@ export default function BacklogHeader({
         variant="outlined"
         size="small"
         startIcon={<AutoAwesomeOutlined />}
-        disabled
-        title="Ask AI is not available yet."
+        onClick={onAskAI}
       >
         Ask AI
       </Button>

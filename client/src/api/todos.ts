@@ -5,6 +5,8 @@ import type {
   Todo,
   TodoListQuery,
   CreateTodoRequest,
+  BulkCreateTodosRequest,
+  BulkCreateTodosResponse,
   UpdateTodoRequest,
   MoveTodoRequest,
 } from '../types/api';
@@ -87,6 +89,19 @@ export function createTodo(
     request<TodoResponse>(
       'POST',
       `/projects/${projectId}/todos`,
+      data
+    )
+  );
+}
+
+export function createTodos(
+  projectId: string,
+  data: BulkCreateTodosRequest
+): Promise<BulkCreateTodosResponse> {
+  return requireResponse(
+    request<BulkCreateTodosResponse>(
+      'POST',
+      `/projects/${projectId}/todos/bulk`,
       data
     )
   );

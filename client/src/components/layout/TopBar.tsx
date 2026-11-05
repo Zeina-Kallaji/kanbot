@@ -10,11 +10,16 @@ import {
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 
 interface Props {
-  onAskAI: () => void;
+  onAskAI?: () => void;
+  disabled?: boolean;
 }
 
-export default function TopBar({ onAskAI }: Props) {
+export default function TopBar({ onAskAI, disabled = false }: Props) {
   const location = useLocation();
+  const isProjectsList = location.pathname === '/projects';
+  const isBacklog = location.pathname.endsWith('/backlog');
+
+  if (isProjectsList || isBacklog) return null;
 
   const getPageTitle = () => {
     if (location.pathname.includes('/backlog')) return 'Backlog';
@@ -45,6 +50,7 @@ export default function TopBar({ onAskAI }: Props) {
           size="small"
           startIcon={<AutoAwesomeOutlinedIcon />}
           onClick={onAskAI}
+          disabled={disabled}
           sx={{ px: 1.25, py: 0.25, minWidth: 0, fontSize: 12 }}
         >
           Ask AI

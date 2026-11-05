@@ -18,7 +18,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { 
   ViewKanban, 
@@ -34,6 +34,9 @@ import {
 import { useAuth } from '../features/auth/AuthContext';
 import { useProjects } from '../hooks/projects/useProjects';
 import { colors } from '../theme/theme';
+import TopBar from '../components/layout/TopBar';
+import AssistantDrawer, { type AssistantDrawerHandle } from '../features/ai/AssistantDrawer';
+import { AssistantContext } from '../features/ai/AssistantContext';
 
 const SIDEBAR_WIDTH = 240;
 
@@ -58,6 +61,8 @@ export default function AppLayout() {
   const { projectId } = useParams<{ projectId: string }>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const assistantRef = useRef<AssistantDrawerHandle>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {
@@ -108,7 +113,20 @@ export default function AppLayout() {
     return false;
   };
 
+  const openAssistant = () => setAssistantOpen(true);
+  const openGenerateTodos = () => {
+    assistantRef.current?.openGenerateTodos();
+    setAssistantOpen(true);
+  };
+  const openPlanSprint = () => {
+    assistantRef.current?.openPlanSprint();
+    setAssistantOpen(true);
+  };
+
   return (
+    <AssistantContext.Provider
+      value={{ openAssistant, openGenerateTodos, openPlanSprint }}
+    >
     <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       {/* Sidebar */}
       <Drawer
@@ -245,6 +263,11 @@ export default function AppLayout() {
                   selected={selected}
                   disabled={isProjectRoute && !projectId}
                   onClick={() => {
+                    if (item.label === 'AI Assistant') {
+                      openAssistant();
+                      setMobileSidebarOpen(false);
+                      return;
+                    }
                     navigateAndCloseSidebar(item.path.replace(':id', projectId ?? ''));
                   }}
                   sx={{
@@ -484,6 +507,7 @@ export default function AppLayout() {
           minHeight: '100vh',
         }}
       >
+        <TopBar onAskAI={openAssistant} disabled={!projectId} />
         {isMobile && (
           <Box
             component="header"
@@ -511,6 +535,14 @@ export default function AppLayout() {
         )}
         <Outlet />
       </Box>
+      <AssistantDrawer
+        ref={assistantRef}
+        key={projectId ?? 'no-project'}
+        projectId={projectId ?? ''}
+        open={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+      />
     </Box>
+    </AssistantContext.Provider>
   );
 }
