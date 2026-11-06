@@ -246,6 +246,13 @@ export interface StartSprintRequest {
 export interface CompleteSprintRequest {
   /** Where unfinished (not "done") todos go: the backlog, or a planned sprint's id. */
   moveUnfinishedTo: 'backlog' | string;
+  generateAiSummary: boolean;
+}
+
+export interface CompleteSprintResponse {
+  sprint: Sprint;
+  summary?: SprintSummary;
+  summaryError?: string;
 }
 
 export interface SprintListResponse {

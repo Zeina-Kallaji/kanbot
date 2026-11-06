@@ -6,9 +6,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
+  FormControlLabel,
   FormControl,
+  FormHelperText,
   InputLabel,
   MenuItem,
+  Checkbox,
   Select,
   Stack,
   Typography,
@@ -33,13 +37,14 @@ export default function CompleteSprintDialog({
   onSubmit,
 }: CompleteSprintDialogProps) {
   const [moveUnfinishedTo, setMoveUnfinishedTo] = useState('backlog');
+  const [generateAiSummary, setGenerateAiSummary] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const unfinishedCount = sprint.stats.totalTodos - sprint.stats.doneTodos;
 
   async function handleSubmit() {
     setError(null);
     try {
-      await onSubmit({ moveUnfinishedTo });
+      await onSubmit({ moveUnfinishedTo, generateAiSummary });
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -83,6 +88,22 @@ export default function CompleteSprintDialog({
               </Select>
             </FormControl>
           )}
+          <Divider />
+          <FormControl>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={generateAiSummary}
+                  onChange={(event) => setGenerateAiSummary(event.target.checked)}
+                  disabled={isSaving}
+                />
+              }
+              label="Generate AI summary"
+            />
+            <FormHelperText sx={{ ml: 4 }}>
+              Opens the summary in Sprints history
+            </FormHelperText>
+          </FormControl>
         </Stack>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>

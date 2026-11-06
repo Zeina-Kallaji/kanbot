@@ -30,11 +30,11 @@ const colors = {
     textMuted: '#98A2B3',
   },
   semantic: {
-    success: '#269B75',
-    warning: '#D99A36',
-    error: '#D95D68',
-    info: '#4D82C5',
-    successBg: '#EFF9F4',
+    success: '#447f6c',
+    warning: '#f6c678',
+    error: '#f87064',
+    info: '#a2bad9',
+    successBg: '#afb1b0',
     warningBg: '#FFF8E6',
     errorBg: '#FFEBEE',
     infoBg: '#EAF3FF',
@@ -86,13 +86,13 @@ const theme = createTheme({
   typography: {
     fontFamily: '"Inter", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
     h1: {
-      fontSize: '1.875rem',
+      fontSize: '1.625rem',
       fontWeight: 600,
       lineHeight: 1.3,
       color: colors.neutral.textMain,
     },
     h2: {
-      fontSize: '1.25rem',
+      fontSize: '1.125rem',
       fontWeight: 600,
       lineHeight: 1.4,
       color: colors.neutral.textMain,
@@ -104,36 +104,36 @@ const theme = createTheme({
       color: colors.neutral.textMain,
     },
     body1: {
-      fontSize: '0.9375rem',
+      fontSize: '0.8rem',
       fontWeight: 400,
       lineHeight: 1.6,
       color: colors.neutral.textMain,
     },
     body2: {
-      fontSize: '0.875rem',
+      fontSize: '0.8125rem',
       fontWeight: 400,
       lineHeight: 1.5,
       color: colors.neutral.textSecondary,
     },
     button: {
-      fontSize: '0.875rem',
+      fontSize: '0.855rem',
       fontWeight: 500,
       textTransform: 'none' as const,
     },
   },
   
-  spacing: 8,
+  spacing: 6,
   
   shape: {
-    borderRadius: 8,
+    borderRadius: 17,
   },
   
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          padding: '10px 20px',
+          borderRadius: 18,
+          padding: '8px 16px',
           boxShadow: 'none',
           '&:hover': {
             boxShadow: 'none',
@@ -149,7 +149,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          borderRadius: 10,
+          borderRadius: 14,
         },
       },
       defaultProps: {
@@ -161,7 +161,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           border: `1px solid ${colors.neutral.border}`,
-          borderRadius: 12,
+          borderRadius: 14,
           boxShadow: '0 1px 3px rgba(32, 43, 60, 0.06)',
         },
       },

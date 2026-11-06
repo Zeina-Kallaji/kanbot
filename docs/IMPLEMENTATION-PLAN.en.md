@@ -224,7 +224,7 @@ erDiagram
 | PATCH | `/sprints/:sprintId` | `UpdateSprintRequest` → `{ sprint }` | SPR-2 |
 | DELETE | `/sprints/:sprintId` | → **204** (planned only) | SPR-2 |
 | POST | `/sprints/:sprintId/start` | `StartSprintRequest` → `{ sprint }` | SPR-3 |
-| POST | `/sprints/:sprintId/complete` | `CompleteSprintRequest` → `{ sprint }` | SPR-6 |
+| POST | `/sprints/:sprintId/complete` | `CompleteSprintRequest` → `CompleteSprintResponse` | SPR-6 |
 | **AI** |||
 | GET | `/ai/status` | → `{ mode: 'mock' \| 'ai', model }` | AI-5 |
 | POST | `/projects/:projectId/ai/chat` | `ChatRequest` → `ChatResponse` | AI-1 |
@@ -296,7 +296,8 @@ POST /api/projects/:projectId/sprints
 
 ```http
 POST /api/sprints/:id/start      { "startDate": "2026-11-02", "endDate": "2026-11-16" }  // both optional
-POST /api/sprints/:id/complete   { "moveUnfinishedTo": "backlog" }   // or a planned sprint id
+POST /api/sprints/:id/complete   { "moveUnfinishedTo": "backlog", "generateAiSummary": true }   // or a planned sprint id
+// AI failure does not undo completion; response includes summaryError.
 GET  /api/sprints/:id/todos      → { "sprint": {…}, "columns": { "todo": [], "in_progress": [], "in_review": [], "done": [] } }
 ```
 After `complete`, `sprint.completedStats` = `{ totalTodos, doneTodos, totalPoints, donePoints, byStatus, carriedOver }`.

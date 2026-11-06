@@ -97,110 +97,100 @@ export default function LoginPage() {
       }}
     >
       <Container maxWidth="xs">
-        <Stack spacing={3} sx={{ alignItems: "center" }}>
-          {/* Logo */}
-          <Box sx={{ mb: 2 }}>
-            <Box
-              component="img"
-              src="/kanbot-logo.svg"
-              alt="Kanbot"
-              sx={{
-                height: 48,
-                mb: 1,
-                display: 'block',
-                mx: 'auto',
-              }}
-            />
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ textAlign: "center", mt: 1 }}
-            >
-              Your sprint board with an AI teammate
+        <Paper
+          elevation={2}
+          sx={{
+            width: '100%',
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Box
+            component="img"
+            src="/kanbot-logo-tagline.svg"
+            alt="Kanbot — Your sprint board with an AI teammate"
+            sx={{
+              display: 'block',
+              width: '100%',
+              maxWidth: 230,
+              height: 'auto',
+              mx: 'auto',
+              mb: 2,
+            }}
+          />
+
+          <Typography variant="h2" sx={{ mb: 3, textAlign: 'center' }}>
+            Log in to your account
+          </Typography>
+
+          {/* Server Error Message */}
+          {serverError && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {serverError}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            <Stack spacing={2.5}>
+              {/* Email Field */}
+              <TextField
+                label="Email"
+                type="email"
+                autoComplete="email"
+                autoFocus
+                fullWidth
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                {...register('email')}
+                disabled={isLoading}
+              />
+
+              {/* Password Field */}
+              <TextField
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                fullWidth
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                {...register('password')}
+                disabled={isLoading}
+              />
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                disabled={isLoading}
+                sx={{ mt: 1 }}
+              >
+                {isLoading ? 'Logging in...' : 'Log in'}
+              </Button>
+            </Stack>
+          </form>
+
+          {/* Register Link */}
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Don't have an account?{' '}
+              <Link
+                component={RouterLink}
+                to="/register"
+                sx={{
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                Create one
+              </Link>
             </Typography>
           </Box>
-
-          <Paper
-            elevation={2}
-            sx={{
-              width: '100%',
-              p: 4,
-              borderRadius: 2,
-            }}
-          >
-            <Typography variant="h2" sx={{ mb: 3, textAlign: 'center' }}>
-              Log in to your account
-            </Typography>
-
-            {/* Server Error Message */}
-            {serverError && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {serverError}
-              </Alert>
-            )}
-
-            <form onSubmit={handleSubmit(onSubmit)} noValidate>
-              <Stack spacing={2.5}>
-                {/* Email Field */}
-                <TextField
-                  label="Email"
-                  type="email"
-                  autoComplete="email"
-                  autoFocus
-                  fullWidth
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                  {...register('email')}
-                  disabled={isLoading}
-                />
-
-                {/* Password Field */}
-                <TextField
-                  label="Password"
-                  type="password"
-                  autoComplete="current-password"
-                  fullWidth
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                  {...register('password')}
-                  disabled={isLoading}
-                />
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  disabled={isLoading}
-                  sx={{ mt: 1 }}
-                >
-                  {isLoading ? 'Logging in...' : 'Log in'}
-                </Button>
-              </Stack>
-            </form>
-
-            {/* Register Link */}
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                Don't have an account?{' '}
-                <Link
-                  component={RouterLink}
-                  to="/register"
-                  sx={{
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                    '&:hover': {
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  Create one
-                </Link>
-              </Typography>
-            </Box>
-          </Paper>
-        </Stack>
+        </Paper>
       </Container>
     </Box>
   );

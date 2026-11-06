@@ -228,7 +228,7 @@ erDiagram
 | PATCH | `/sprints/:sprintId` | `UpdateSprintRequest` ← `{ sprint }` | SPR-2 |
 | DELETE | `/sprints/:sprintId` | ← **204** (المخطط لها فقط) | SPR-2 |
 | POST | `/sprints/:sprintId/start` | `StartSprintRequest` ← `{ sprint }` | SPR-3 |
-| POST | `/sprints/:sprintId/complete` | `CompleteSprintRequest` ← `{ sprint }` | SPR-6 |
+| POST | `/sprints/:sprintId/complete` | `CompleteSprintRequest` ← `CompleteSprintResponse` | SPR-6 |
 | **الذكاء الاصطناعي (AI)** |||
 | GET | `/ai/status` | ← `{ mode: 'mock' \| 'ai', model }` | AI-5 |
 | POST | `/projects/:projectId/ai/chat` | `ChatRequest` ← `ChatResponse` | AI-1 |
@@ -300,7 +300,8 @@ POST /api/projects/:projectId/sprints
 
 ```http
 POST /api/sprints/:id/start      { "startDate": "2026-11-02", "endDate": "2026-11-16" }  // كلاهما اختياري
-POST /api/sprints/:id/complete   { "moveUnfinishedTo": "backlog" }   // أو معرّف سبرنت مخطط له
+POST /api/sprints/:id/complete   { "moveUnfinishedTo": "backlog", "generateAiSummary": true }   // أو معرّف سبرنت مخطط له
+// فشل الذكاء الاصطناعي لا يلغي الإكمال؛ تتضمن الاستجابة summaryError.
 GET  /api/sprints/:id/todos      → { "sprint": {…}, "columns": { "todo": [], "in_progress": [], "in_review": [], "done": [] } }
 ```
 بعد `complete`، تكون `sprint.completedStats` = `{ totalTodos, doneTodos, totalPoints, donePoints, byStatus, carriedOver }`.

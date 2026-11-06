@@ -52,6 +52,7 @@ import { useSprintBoard } from '../../hooks/sprints/useSprintBoard';
 import { useSprintMutations } from '../../hooks/sprints/useSprintMutations';
 import { useMoveTodo } from '../../hooks/todos/useMoveTodo';
 import { useUpdateTodo } from '../../hooks/todos/useUpdateTodo';
+import { toast } from '../../lib/toast';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorState from '../../components/ErrorState';
 import TodoDetailsDialog from '../backlog/components/TodoDetailsDialog';
@@ -288,13 +289,20 @@ export default function BoardPage() {
   }
 
   async function handleCompleteSprint(data: CompleteSprintRequest) {
-    await mutations.complete.mutateAsync({
+    const response = await mutations.complete.mutateAsync({
       projectId,
       sprintId: sprint.id,
       data,
     });
     setCompleteDialogOpen(false);
-    navigate(`/projects/${projectId}/backlog`);
+    if (response.summaryError) {
+      toast.error(response.summaryError);
+    }
+    navigate(
+      data.generateAiSummary
+        ? `/projects/${projectId}/sprints/${sprint.id}`
+        : `/projects/${projectId}/backlog`
+    );
   }
 
   async function handleSummarizeSprint(regenerate = false) {

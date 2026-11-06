@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
+import { aiSource, summarizeSprint } from '../ai/assistant.service.js';
 import { db, type SprintRecord } from '../db/store.js';
-import { badRequest, conflict } from '../lib/errors.js';
+import { AppError, badRequest, conflict } from '../lib/errors.js';
 import { currentUser } from '../middleware/auth.js';
 import { parse } from '../middleware/validate.js';
 import {
@@ -21,7 +22,7 @@ import {
   toSprint,
   toTodo,
 } from '../services/board.service.js';
-import { TODO_STATUSES, type SprintBoardResponse, type SprintListResponse, type Todo, type TodoStatus } from '../types/api.js';
+import { TODO_STATUSES, type CompleteSprintResponse, type SprintBoardResponse, type SprintListResponse, type SprintSummary, type Todo, type TodoStatus } from '../types/api.js';
 import { dateOnly } from './schemas.js';
 
 /** Mounted at /api. */
@@ -142,9 +143,15 @@ sprintsRouter.post('/sprints/:sprintId/start', (req, res) => {
   res.json({ sprint: toSprint(sprint) });
 });
 
-sprintsRouter.post('/sprints/:sprintId/complete', (req, res) => {
+sprintsRouter.post('/sprints/:sprintId/complete', async (req, res) => {
   const { sprint, project } = getSprint(currentUser(req).id, req.params.sprintId);
-  const body = parse(z.object({ moveUnfinishedTo: z.string().min(1).default('backlog') }), req.body ?? {});
+  const body = parse(
+    z.object({
+      moveUnfinishedTo: z.string().min(1).default('backlog'),
+      generateAiSummary: z.boolean().default(false),
+    }),
+    req.body ?? {},
+  );
   if (sprint.status !== 'active') throw conflict('Only the active sprint can be completed.');
 
   let target: string | null = null;
@@ -155,6 +162,7 @@ sprintsRouter.post('/sprints/:sprintId/complete', (req, res) => {
   }
 
   const todos = todosOfSprint(sprint.id);
+  const summaryTodos = todos.map((todo) => ({ ...todo, labels: [...todo.labels] }));
   const unfinished = todos.filter((t) => t.status !== 'done');
   db.write(() => {
     sprint.completedStats = { ...statsFor(todos), carriedOver: unfinished.length };
@@ -163,5 +171,31 @@ sprintsRouter.post('/sprints/:sprintId/complete', (req, res) => {
     Object.assign(sprint, { status: 'completed', completedAt: now(), updatedAt: now() });
     project.updatedAt = now();
   });
-  res.json({ sprint: toSprint(sprint) });
+
+  let summary: SprintSummary | undefined;
+  let summaryError: string | undefined;
+  if (body.generateAiSummary) {
+    try {
+      const content = await summarizeSprint(project, sprint, summaryTodos);
+      const generatedSummary = { content, source: aiSource(), generatedAt: now() };
+      summary = generatedSummary;
+      db.write(() => {
+        sprint.summary = generatedSummary;
+        sprint.updatedAt = now();
+      });
+    } catch (error) {
+      if (error instanceof AppError && error.code === 'AI_ERROR') {
+        summaryError = error.message;
+      } else {
+        console.error('Sprint completed, but its AI summary could not be generated:', error);
+        summaryError = 'Sprint completed, but its AI summary could not be generated.';
+      }
+    }
+  }
+
+  res.json({
+    sprint: toSprint(sprint),
+    ...(summary ? { summary } : {}),
+    ...(summaryError ? { summaryError } : {}),
+  } satisfies CompleteSprintResponse);
 });

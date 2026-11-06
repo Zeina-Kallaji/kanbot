@@ -198,11 +198,16 @@ await step('ai: status, generate todos, plan sprint, chat (mock)', async () => {
 
 await step('sprints: complete → unfinished to next sprint, require real summary AI', async () => {
   assert.equal((await call('POST', `/sprints/${sprintId}/complete`, { moveUnfinishedTo: 'nope' })).status, 400);
-  const r = await call('POST', `/sprints/${sprintId}/complete`, { moveUnfinishedTo: nextSprintId });
+  const r = await call('POST', `/sprints/${sprintId}/complete`, {
+    moveUnfinishedTo: nextSprintId,
+    generateAiSummary: true,
+  });
   assert.equal(r.status, 200);
   assert.equal(r.json.sprint.status, 'completed');
   assert.equal(r.json.sprint.completedStats.carriedOver, 3);
   assert.equal(r.json.sprint.completedStats.doneTodos, 1);
+  assert.match(r.json.summaryError, /Real AI is not configured/);
+  assert.equal(r.json.sprint.summary, null);
   assert.equal((await call('GET', `/sprints/${nextSprintId}/todos`)).json.sprint.stats.totalTodos, 3);
   assert.equal((await call('POST', `/todos/${ids[2]}/move`, { status: 'todo', position: 0 })).status, 409);
   const sum = await call('POST', `/sprints/${sprintId}/ai/summary`, { projectId });
@@ -212,8 +217,27 @@ await step('sprints: complete → unfinished to next sprint, require real summar
   assert.equal((await call('GET', `/sprints/${sprintId}/todos`)).json.sprint.summary, null);
   assert.equal((await call('POST', `/sprints/${sprintId}/ai/summary`, { projectId: 'wrong-project' })).status, 404);
   assert.equal((await call('POST', `/sprints/${nextSprintId}/ai/summary`, { projectId })).status, 409);
+
+  const uncheckedSprint = await call('POST', `/projects/${projectId}/sprints`, {
+    todoIds: [ids[3]],
+  });
+  const uncheckedSprintId = uncheckedSprint.json.sprint.id;
+  assert.equal((await call('POST', `/sprints/${uncheckedSprintId}/start`, {})).status, 200);
+  const unchecked = await call('POST', `/sprints/${uncheckedSprintId}/complete`, {
+    moveUnfinishedTo: nextSprintId,
+    generateAiSummary: false,
+  });
+  assert.equal(unchecked.status, 200);
+  assert.equal(unchecked.json.sprint.status, 'completed');
+  assert.equal(unchecked.json.sprint.summary, null);
+  assert.equal(unchecked.json.summaryError, undefined);
+  assert.equal((await call('GET', `/sprints/${nextSprintId}/todos`)).json.sprint.stats.totalTodos, 4);
+
   const sprints = await call('GET', `/projects/${projectId}/sprints`);
-  assert.deepEqual(sprints.json.sprints.map((s: { status: string }) => s.status), ['planned', 'completed']);
+  assert.deepEqual(
+    sprints.json.sprints.map((s: { status: string }) => s.status),
+    ['planned', 'completed', 'completed'],
+  );
 });
 
 await step('delete: planned sprint returns todos to backlog, todo delete, 404s', async () => {

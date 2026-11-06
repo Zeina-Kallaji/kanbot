@@ -240,14 +240,18 @@ function mockPlanSprint(
 
 // ─────────────────────────── 3. Summarize sprint ───────────────────────────
 
-export async function summarizeSprint(project: ProjectRecord, sprint: SprintRecord): Promise<string> {
+export async function summarizeSprint(
+  project: ProjectRecord,
+  sprint: SprintRecord,
+  sprintTodos: readonly TodoRecord[] = todosOfSprint(sprint.id)
+): Promise<string> {
   if (!env.aiEnabled) {
     throw aiError(
       'Real AI is not configured. Set AI_API_KEY and AI_MODEL on the server to generate a sprint summary.'
     );
   }
 
-  const todos = todosOfSprint(sprint.id);
+  const todos = [...sprintTodos];
   const stats = sprint.completedStats ?? { ...statsFor(todos), carriedOver: 0 };
   const done = todos.filter((t) => t.status === 'done');
   const open = todos.filter((t) => t.status !== 'done');

@@ -2,6 +2,7 @@ import { request } from './client';
 import type {
   CreateSprintRequest,
   CompleteSprintRequest,
+  CompleteSprintResponse,
   Sprint,
   SprintBoardResponse,
   SprintListResponse,
@@ -71,8 +72,8 @@ export function startSprint(
 export function completeSprint(
   sprintId: string,
   data: CompleteSprintRequest
-): Promise<SprintResponse> {
+): Promise<CompleteSprintResponse> {
   return requireResponse(
-    request<SprintResponse>('POST', `/sprints/${sprintId}/complete`, data)
+    request<CompleteSprintResponse>('POST', `/sprints/${sprintId}/complete`, data)
   );
 }
