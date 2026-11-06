@@ -323,6 +323,27 @@ export default function AppLayout() {
               PROJECTS
             </Typography>
 
+            <ListItemButton
+              selected={location.pathname === '/projects'}
+              onClick={() => navigateAndCloseSidebar('/projects')}
+              sx={{
+                mt: 0.5,
+                borderRadius: 1.5,
+                '&.Mui-selected': {
+                  bgcolor: colors.primary.soft,
+                  color: 'primary.main',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 32 }}>
+                <FolderCopy fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary="All Projects"
+                slotProps={{ primary: { sx: { fontSize: '0.875rem' } } }}
+              />
+            </ListItemButton>
+
             {projectsFailed ? (
               <Alert
                 severity="error"
@@ -388,27 +409,6 @@ export default function AppLayout() {
                 </ListItemButton>
               ))
             )}
-
-            <ListItemButton
-              selected={location.pathname === '/projects'}
-              onClick={() => navigateAndCloseSidebar('/projects')}
-              sx={{
-                mt: 0.5,
-                borderRadius: 1.5,
-                '&.Mui-selected': {
-                  bgcolor: colors.primary.soft,
-                  color: 'primary.main',
-                },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                <FolderCopy fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary="All Projects"
-                slotProps={{ primary: { sx: { fontSize: '0.875rem' } } }}
-              />
-            </ListItemButton>
           </Box>
 
           <Divider />

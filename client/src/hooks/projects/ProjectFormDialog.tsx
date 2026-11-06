@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogTitle,
@@ -8,6 +9,7 @@ import {
   TextField,
   Box,
   Alert,
+  Typography,
 } from '@mui/material';
 
 import type {
@@ -33,6 +35,7 @@ export function ProjectFormDialog({
   onClose,
 }: Props) {
   const isEditing = Boolean(project);
+  const navigate = useNavigate();
 
   const createMutation = useCreateProject();
   const updateMutation = useUpdateProject();
@@ -108,7 +111,8 @@ export function ProjectFormDialog({
           createData.key = normalizedKey;
         }
 
-        await createMutation.mutateAsync(createData);
+        const response = await createMutation.mutateAsync(createData);
+        navigate(`/projects/${response.project.id}/backlog`);
       }
 
       onClose();
@@ -157,21 +161,32 @@ export function ProjectFormDialog({
               }}
             />
 
-            <TextField
-              label="Project Key"
-              value={key}
-              onChange={(event) =>
-                setKey(event.target.value.toUpperCase())
-              }
-              fullWidth
-              disabled={isPending}
-              error={Boolean(errors.key)}
-              helperText={errors.key || 'Auto-generated if empty (2-6 letters)'}
-              placeholder={isEditing ? project?.key : 'e.g., KAN'}
-              slotProps={{
-                htmlInput: { maxLength: 6 },
-              }}
-            />
+            <Box>
+              <TextField
+                label="Project Key"
+                value={key}
+                onChange={(event) =>
+                  setKey(event.target.value.toUpperCase())
+                }
+                fullWidth
+                disabled={isPending}
+                error={Boolean(errors.key)}
+                helperText={errors.key || 'Auto-generated if empty (2-6 letters)'}
+                placeholder={isEditing ? project?.key : 'e.g., KAN'}
+                slotProps={{
+                  htmlInput: { maxLength: 6 },
+                }}
+              />
+              {isEditing && (
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{ display: 'block', mt: 0.5, px: 1 }}
+                >
+                  Changing the key does not change existing todo keys
+                </Typography>
+              )}
+            </Box>
 
             <TextField
               label="Description"
