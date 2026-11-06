@@ -4,10 +4,19 @@ import {
   Box,
   Typography,
   Button,
-  Divider,
+  Stack,
 } from '@mui/material';
 
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import FolderCopyIcon from '@mui/icons-material/FolderCopy';
+import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
+import {
+  pageHeaderButtonSx,
+  pageHeaderIconSx,
+  pageHeaderSx,
+  pageHeaderTitleSx,
+} from './pageHeaderStyles';
 
 interface Props {
   onAskAI?: () => void;
@@ -29,21 +38,35 @@ export default function TopBar({ onAskAI, disabled = false }: Props) {
     return 'Projects';
   };
 
+  const getPageIcon = () => {
+    if (location.pathname.includes('/sprints')) {
+      return <CalendarMonthIcon sx={pageHeaderIconSx} />;
+    }
+    if (location.pathname.includes('/board') || location.pathname.includes('/sprint')) {
+      return <ViewKanbanIcon sx={pageHeaderIconSx} />;
+    }
+    return <FolderCopyIcon sx={pageHeaderIconSx} />;
+  };
+
   return (
-    <Box>
+    <Box component="header" sx={pageHeaderSx}>
       <Box
         sx={{
-          height: 48,
-          px: 3,
+          width: '100%',
+          px: { xs: 2, sm: 3 },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          bgcolor: 'background.paper',
+          gap: 2,
+          flexWrap: 'wrap',
         }}
       >
-        <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-          {getPageTitle()}
-        </Typography>
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
+          {getPageIcon()}
+          <Typography variant="h1" sx={pageHeaderTitleSx}>
+            {getPageTitle()}
+          </Typography>
+        </Stack>
 
         <Button
           variant="outlined"
@@ -51,13 +74,11 @@ export default function TopBar({ onAskAI, disabled = false }: Props) {
           startIcon={<AutoAwesomeOutlinedIcon />}
           onClick={onAskAI}
           disabled={disabled}
-          sx={{ px: 1.25, py: 0.25, minWidth: 0, fontSize: 12 }}
+          sx={{ ...pageHeaderButtonSx, minWidth: 0 }}
         >
           Ask AI
         </Button>
       </Box>
-
-      <Divider />
     </Box>
   );
 }

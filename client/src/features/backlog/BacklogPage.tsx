@@ -16,16 +16,24 @@ import {
   Alert,
   Box,
   Button,
+  Collapse,
   Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Paper,
+  IconButton,
   Stack,
   Typography,
 } from '@mui/material';
-import { AddOutlined, AutoAwesomeOutlined, BoltOutlined } from '@mui/icons-material';
+import {
+  AddOutlined,
+  AutoAwesomeOutlined,
+  BoltOutlined,
+  KeyboardArrowDownOutlined,
+  KeyboardArrowRightOutlined,
+} from '@mui/icons-material';
 import type {
   CreateSprintRequest,
   Sprint,
@@ -109,6 +117,7 @@ export default function BacklogPage() {
   const [selectedSprint, setSelectedSprint] = useState<Sprint | null>(null);
   const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null);
   const [activeDragTodo, setActiveDragTodo] = useState<Todo | null>(null);
+  const [backlogExpanded, setBacklogExpanded] = useState(true);
 
   const allTodosQuery = useTodos(validProjectId, { sprintId: 'backlog' });
   const filteredTodosQuery = useTodos(validProjectId, {
@@ -438,18 +447,19 @@ export default function BacklogPage() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <BacklogHeader
         totalTasks={allTodos.length}
         totalPoints={totalPoints}
         onAskAI={assistantActions.openAssistant}
       />
 
-      {pageError && (
-        <Alert severity="error" onClose={() => setPageError(null)} sx={{ mb: 2 }}>
-          {pageError}
-        </Alert>
-      )}
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        {pageError && (
+          <Alert severity="error" onClose={() => setPageError(null)} sx={{ mb: 2 }}>
+            {pageError}
+          </Alert>
+        )}
 
       <Stack
         direction={{ xs: 'column', lg: 'row' }}
@@ -536,72 +546,102 @@ export default function BacklogPage() {
 
         <Paper
           variant="outlined"
-          sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}
+          sx={{ mb: 2, overflow: 'hidden', borderRadius: 2 }}
         >
           <Stack
-            direction="row"
-            sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={{ xs: 1, sm: 2 }}
+            sx={{
+              alignItems: { sm: 'center' },
+              minHeight: 49.35,
+              px: { xs: 1, sm: 1.5 },
+              py: 0.75,
+              bgcolor: '#b9c9ee',
+            }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Backlog
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {visibleTodos.length} items
-            </Typography>
+            <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', minWidth: 0 }}>
+              <IconButton
+                size="small"
+                onClick={() => setBacklogExpanded((value) => !value)}
+                aria-label={backlogExpanded ? 'Collapse backlog' : 'Expand backlog'}
+                sx={{ p: 0.25 }}
+              >
+                {backlogExpanded ? (
+                  <KeyboardArrowDownOutlined fontSize="small" />
+                ) : (
+                  <KeyboardArrowRightOutlined fontSize="small" />
+                )}
+              </IconButton>
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.primary', fontWeight: 600, whiteSpace: 'nowrap' }}
+              >
+                Backlog
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                {allTodos.length} todos · {totalPoints} pts
+              </Typography>
+            </Stack>
           </Stack>
 
-          {visibleTodos.length === 0 ? (
-            <Box sx={{ py: 4, textAlign: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                {allTodos.length === 0 ? 'Your backlog is empty' : 'No matching todos'}
-              </Typography>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
-                {allTodos.length === 0
-                  ? 'Create your first todo to start organizing your project.'
-                  : 'Try changing your search or filters.'}
-              </Typography>
-              {allTodos.length === 0 && (
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ justifyContent: 'center' }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<AddOutlined />}
-                    onClick={() => {
-                      document
-                        .querySelector<HTMLInputElement>(
-                          'input[placeholder="Type a title and press Enter"]'
-                        )
-                        ?.focus();
-                    }}
-                  >
-                    Create todo
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<AutoAwesomeOutlined />}
-                    onClick={assistantActions.openGenerateTodos}
-                  >
-                    Generate todos with AI
-                  </Button>
-                </Stack>
+          <Collapse in={backlogExpanded}>
+            <Box>
+              {visibleTodos.length === 0 ? (
+                <Box sx={{ py: 4, textAlign: 'center' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    {allTodos.length === 0 ? 'Your backlog is empty' : 'No matching todos'}
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ mb: 2 }}>
+                    {allTodos.length === 0
+                      ? 'Create your first todo to start organizing your project.'
+                      : 'Try changing your search or filters.'}
+                  </Typography>
+                  {allTodos.length === 0 && (
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ justifyContent: 'center' }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<AddOutlined />}
+                        onClick={() => {
+                          document
+                            .querySelector<HTMLInputElement>(
+                              'input[placeholder="Type a title and press Enter"]'
+                            )
+                            ?.focus();
+                        }}
+                      >
+                        Create todo
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        startIcon={<AutoAwesomeOutlined />}
+                        onClick={assistantActions.openGenerateTodos}
+                      >
+                        Generate todos with AI
+                      </Button>
+                    </Stack>
+                  )}
+                </Box>
+              ) : (
+                <BacklogList
+                  todos={visibleTodos}
+                  onTodoClick={handleOpenTodo}
+                  listId="backlog"
+                  isDraggable={!filtersActive}
+                  sprints={sprintOptions}
+                  onMove={handleMoveTodo}
+                  onReorder={handleReorderTodo}
+                  onDelete={setTodoToDelete}
+                />
               )}
-            </Box>
-          ) : (
-            <BacklogList
-              todos={visibleTodos}
-              onTodoClick={handleOpenTodo}
-              listId="backlog"
-              isDraggable={!filtersActive}
-              sprints={sprintOptions}
-              onMove={handleMoveTodo}
-              onReorder={handleReorderTodo}
-              onDelete={setTodoToDelete}
-            />
-          )}
 
-          <QuickCreateTodo
-            onCreate={handleCreateTodo}
-            isCreating={createTodoMutation.isPending}
-          />
+              <Box sx={{ p: { xs: 2, sm: 3 } }}>
+                <QuickCreateTodo
+                  onCreate={handleCreateTodo}
+                  isCreating={createTodoMutation.isPending}
+                />
+              </Box>
+            </Box>
+          </Collapse>
         </Paper>
         <DragOverlay>
           {activeDragTodo ? (
@@ -693,7 +733,8 @@ export default function BacklogPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      </Container>
+    </Box>
   );
 }
 

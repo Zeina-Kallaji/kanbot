@@ -1,7 +1,15 @@
 ﻿// client/src/features/backlog/components/BacklogHeader.tsx
 
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { AutoAwesomeOutlined } from '@mui/icons-material';
+import FolderOpen from '@mui/icons-material/FolderOpen';
+import {
+  pageHeaderButtonSx,
+  pageHeaderContentSx,
+  pageHeaderIconSx,
+  pageHeaderSx,
+  pageHeaderTitleSx,
+} from '../../../components/layout/pageHeaderStyles';
 
 interface BacklogHeaderProps {
   totalTasks: number;
@@ -15,35 +23,39 @@ export default function BacklogHeader({
   onAskAI,
 }: BacklogHeaderProps) {
   return (
-    <Box
-      sx={{
-        mb: 3,
-        display: 'flex',
-        alignItems: { xs: 'flex-start', sm: 'center' },
-        justifyContent: 'space-between',
-        gap: 2,
-      }}
-    >
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ alignItems: { sm: 'baseline' }, minWidth: 0 }}
-      >
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Backlog
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {totalTasks} todos · {totalPoints} pts
-        </Typography>
-      </Stack>
-      <Button
-        variant="outlined"
-        size="small"
-        startIcon={<AutoAwesomeOutlined />}
-        onClick={onAskAI}
-      >
-        Ask AI
-      </Button>
+    <Box component="header" sx={pageHeaderSx}>
+      <Container maxWidth="lg">
+        <Box sx={pageHeaderContentSx}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            sx={{ alignItems: { sm: 'center' }, minWidth: 0 }}
+          >
+            <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
+              <FolderOpen sx={pageHeaderIconSx} />
+              <Typography variant="h1" sx={pageHeaderTitleSx}>
+                Backlog
+              </Typography>
+            </Stack>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontSize: '0.875rem' }}
+            >
+              {totalTasks} todos · {totalPoints} pts
+            </Typography>
+          </Stack>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AutoAwesomeOutlined />}
+            onClick={onAskAI}
+            sx={pageHeaderButtonSx}
+          >
+            Ask AI
+          </Button>
+        </Box>
+      </Container>
     </Box>
   );
 }

@@ -2,8 +2,8 @@ import { createTheme } from "@mui/material/styles";
 
 const colors = {
   primary: {
-    main: "#3156A3",
-    dark: "#243F7C",
+    main: "#2d4e94",
+    dark: "#21386f",
     light: "#5578C7",
     soft: "#EAF0FF",
     hover: "#294A91",
@@ -20,7 +20,7 @@ const colors = {
     soft: "#EFF9F4",
   },
   neutral: {
-    mainBg: "#e9effc",
+    mainBg: "#ecf1fa",
     surface: "#FFFFFF",
     surfaceSecondary: "#F9FAFD",
     border: "#E5EAF2",
@@ -30,7 +30,7 @@ const colors = {
     textMuted: "#98A2B3",
   },
   semantic: {
-    success: "#447f6c",
+    success: "#55965c",
     warning: "#f6c678",
     error: "#f87064",
     info: "#a2bad9",
@@ -104,6 +104,18 @@ const theme = createTheme({
       lineHeight: 1.5,
       color: colors.neutral.textMain,
     },
+  // h4: {
+  //     fontSize: "0.875rem",
+  //     fontWeight: 600,
+  //     lineHeight: 1.4,
+  //     color: colors.neutral.textMain,
+  //   },
+  //   h5: {
+  //     fontSize: "0.825rem",
+  //     fontWeight: 600,
+  //     lineHeight: 1.3,
+  //     color: colors.neutral.textMain,
+  //   },
     body1: {
       fontSize: "0.8rem",
       fontWeight: 400,
@@ -126,14 +138,14 @@ const theme = createTheme({
   spacing: 6,
 
   shape: {
-    borderRadius: 17,
+    borderRadius: 10,
   },
 
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 18,
+          borderRadius: 13,
           padding: "8px 16px",
           boxShadow: "none",
           "&:hover": {
@@ -150,7 +162,8 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: "none",
-          borderRadius: 14,
+          borderRadius: 5,
+         
         },
       },
       defaultProps: {
@@ -162,8 +175,9 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           border: `1px solid ${colors.neutral.border}`,
-          borderRadius: 14,
+          borderRadius: 12,
           boxShadow: "0 1px 3px rgba(32, 43, 60, 0.06)",
+          backgroundColor: colors.neutral.surface,
         },
       },
     },
@@ -171,7 +185,7 @@ const theme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          borderRadius: 12,
+          borderRadius: 10,
           boxShadow: "0 8px 24px rgba(32, 43, 60, 0.15)",
         },
       },

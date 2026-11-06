@@ -173,7 +173,7 @@ export default function SprintsPage() {
     <Container maxWidth="xl" sx={{ py: 3 }}>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '360px minmax(0, 1fr)' }, gap: 3 }}>
         <Paper variant="outlined" sx={{ p: 2, height: 'fit-content' }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          <Typography variant="h2" sx={{ fontWeight: 700, mb: 2 }}>
             All sprints
           </Typography>
 
@@ -222,7 +222,7 @@ export default function SprintsPage() {
         <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2, flexWrap: 'wrap' }}>
             <Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+              <Typography variant="h2" sx={{ fontWeight: 700, mb: 0.5 }}>
                 {currentSprint.name}
               </Typography>
               <Typography color="text.secondary">
@@ -244,7 +244,7 @@ export default function SprintsPage() {
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     {item.label}
                   </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  <Typography variant="h2" sx={{ fontWeight: 700 }}>
                     {item.value}
                   </Typography>
                 </Paper>

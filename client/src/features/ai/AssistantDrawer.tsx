@@ -34,6 +34,7 @@ import {
   CloseOutlined,
   ReplayOutlined,
   SendOutlined,
+  SmartToy,
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
@@ -53,6 +54,7 @@ import { useSprintMutations } from '../../hooks/sprints/useSprintMutations';
 import { sprintKeys } from '../../hooks/sprints/sprintKeys';
 import { todoKeys } from '../../hooks/todos/todoKeys';
 import { projectKeys } from '../../hooks/projects/projectKeys';
+import { pageHeaderIconSx } from '../../components/layout/pageHeaderStyles';
 
 interface AssistantDrawerProps {
   projectId: string;
@@ -412,7 +414,7 @@ function AssistantDrawer({
         <Box sx={{ px: 2, pt: 1.5, pb: 1 }}>
           <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-              <AutoAwesomeOutlined color="primary" fontSize="small" />
+              <SmartToy sx={pageHeaderIconSx} />
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 Kanbot Assistant
               </Typography>

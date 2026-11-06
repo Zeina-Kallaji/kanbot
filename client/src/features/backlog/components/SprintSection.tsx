@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -8,15 +8,15 @@ import {
   Stack,
   Tooltip,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 import {
   KeyboardArrowDownOutlined,
   KeyboardArrowRightOutlined,
   EditOutlined,
   PlayArrowOutlined,
-} from '@mui/icons-material';
-import type { Sprint, Todo } from '../../../types/api';
-import BacklogList from './BacklogList';
+} from "@mui/icons-material";
+import type { Sprint, Todo } from "../../../types/api";
+import BacklogList from "./BacklogList";
 
 interface SprintSectionProps {
   sprint: Sprint;
@@ -33,11 +33,11 @@ interface SprintSectionProps {
 }
 
 function formatDate(date: string): string {
-  const [year, month, day] = date.split('-').map(Number);
+  const [year, month, day] = date.split("-").map(Number);
   return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    ...(year !== new Date().getFullYear() ? { year: 'numeric' } : {}),
+    month: "short",
+    day: "numeric",
+    ...(year !== new Date().getFullYear() ? { year: "numeric" } : {}),
   }).format(new Date(year, month - 1, day));
 }
 
@@ -66,37 +66,41 @@ export default function SprintSection({
   const [expanded, setExpanded] = useState(true);
   const totalPoints = todos.reduce(
     (total, todo) => total + (todo.storyPoints ?? 0),
-    0
+    0,
   );
   const dates = sprintDateRange(sprint);
 
   return (
     <Paper
       variant="outlined"
-      sx={{ mb: 2, overflow: 'hidden', borderRadius: 2 }}
+      sx={{ mb: 2, overflow: "hidden", borderRadius: 2 }}
     >
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
+        direction={{ xs: "column", sm: "row" }}
         spacing={{ xs: 1, sm: 2 }}
         sx={{
-          alignItems: { sm: 'center' },
-          justifyContent: 'space-between',
+          alignItems: { sm: "center" },
+          justifyContent: "space-between",
           minHeight: 40,
           px: { xs: 1, sm: 1.5 },
           py: 0.75,
-          bgcolor: 'action.hover',
+          bgcolor: "#b9c9ee",
         }}
       >
         <Stack
-          direction={{ xs: 'column', sm: 'row' }}
+          direction={{ xs: "column", sm: "row" }}
           spacing={{ xs: 0.5, sm: 2 }}
-          sx={{ alignItems: { sm: 'center' }, minWidth: 0, flex: 1 }}
+          sx={{ alignItems: { sm: "center" }, minWidth: 0, flex: 1 }}
         >
-          <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', minWidth: 0 }}>
+          <Stack
+            direction="row"
+            spacing={0.75}
+            sx={{ alignItems: "center", minWidth: 0 }}
+          >
             <IconButton
               size="small"
               onClick={() => setExpanded((value) => !value)}
-              aria-label={expanded ? 'Collapse sprint' : 'Expand sprint'}
+              aria-label={expanded ? "Collapse sprint" : "Expand sprint"}
               sx={{ p: 0.25 }}
             >
               {expanded ? (
@@ -107,7 +111,11 @@ export default function SprintSection({
             </IconButton>
             <Typography
               variant="body2"
-              sx={{ color: 'text.primary', fontWeight: 600, whiteSpace: 'nowrap' }}
+              sx={{
+                color: "text.primary",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
             >
               {sprint.name} ({sprint.status})
             </Typography>
@@ -115,11 +123,11 @@ export default function SprintSection({
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ pl: { xs: 4, sm: 0 }, whiteSpace: 'nowrap' }}
+            sx={{ pl: { xs: 4, sm: 0 }, whiteSpace: "nowrap" }}
           >
             {[dates, `${todos.length} todos`, `${totalPoints} pts`]
               .filter(Boolean)
-              .join(' · ')}
+              .join(" · ")}
           </Typography>
           {activeSprintExists && (
             <Typography
@@ -135,7 +143,11 @@ export default function SprintSection({
         <Stack
           direction="row"
           spacing={0.75}
-          sx={{ alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0 }}
+          sx={{
+            alignItems: "center",
+            justifyContent: "flex-end",
+            flexShrink: 0,
+          }}
         >
           <Button
             size="small"
@@ -148,17 +160,18 @@ export default function SprintSection({
           <Tooltip
             title={
               activeSprintExists
-                ? 'Another sprint is already active. Complete it before starting this sprint.'
-                : 'Start sprint'
+                ? "Another sprint is already active. Complete it before starting this sprint."
+                : "Start sprint"
             }
           >
             <span>
               <Button
-                size="small"
+                size= "small"
                 variant="contained"
                 startIcon={<PlayArrowOutlined />}
                 onClick={() => onStart(sprint)}
                 disabled={activeSprintExists}
+                
               >
                 Start sprint
               </Button>
@@ -168,7 +181,7 @@ export default function SprintSection({
       </Stack>
 
       <Collapse in={expanded}>
-        <Box sx={{ p: { xs: 1, sm: 0 }, '& > *': { border: 0, borderRadius: 0 } }}>
+        <Box>
           <BacklogList
             todos={[...todos].sort((a, b) => a.order - b.order)}
             onTodoClick={onTodoClick}
@@ -178,7 +191,6 @@ export default function SprintSection({
             onMove={onMove}
             onReorder={onReorder}
             onDelete={onDelete}
-            compact
           />
           {todos.length === 0 && (
             <Typography

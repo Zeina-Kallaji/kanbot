@@ -53,6 +53,7 @@ import { useSprintMutations } from '../../hooks/sprints/useSprintMutations';
 import { useMoveTodo } from '../../hooks/todos/useMoveTodo';
 import { useUpdateTodo } from '../../hooks/todos/useUpdateTodo';
 import { toast } from '../../lib/toast';
+import { pageHeaderButtonSx } from '../../components/layout/pageHeaderStyles';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorState from '../../components/ErrorState';
 import TodoDetailsDialog from '../backlog/components/TodoDetailsDialog';
@@ -406,6 +407,7 @@ export default function BoardPage() {
                 startIcon={<AutoAwesomeOutlined />}
                 onClick={() => void handleSummarizeSprint()}
                 disabled={summaryPending}
+                sx={pageHeaderButtonSx}
               >
                 {summaryPending
                   ? 'Summarizing…'
@@ -419,7 +421,7 @@ export default function BoardPage() {
                   size="small"
                   startIcon={<CheckCircleOutlined />}
                   onClick={() => setCompleteDialogOpen(true)}
-                  sx={{ whiteSpace: 'nowrap' }}
+                  sx={{ ...pageHeaderButtonSx, whiteSpace: 'nowrap' }}
                 >
                   Complete sprint
                 </Button>

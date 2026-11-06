@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { Box, Container, Typography, Button, TextField, InputAdornment } from '@mui/material';
-import { Add, FolderOpen, Search } from '@mui/icons-material';
+import { Add, FolderCopy, FolderOpen, Search } from '@mui/icons-material';
 import EmptyState from '../../components/EmptyState';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorState from '../../components/ErrorState';
+import {
+  pageHeaderButtonSx,
+  pageHeaderContentSx,
+  pageHeaderIconSx,
+  pageHeaderSx,
+  pageHeaderTitleSx,
+} from '../../components/layout/pageHeaderStyles';
 import ProjectCard from '../../hooks/projects/ProjectCard';
 import { ProjectFormDialog } from '../../hooks/projects/ProjectFormDialog';
 import { useProjects } from '../../hooks/projects/useProjects';
@@ -61,22 +68,22 @@ export default function ProjectsPage() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Header */}
-      <Box
-        sx={{
-          bgcolor: 'background.paper',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          py: 3,
-        }}
-      >
+      <Box sx={pageHeaderSx}>
         <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={pageHeaderContentSx}>
             <Box>
-              <Typography variant="h1" sx={{ fontSize: '1.875rem', fontWeight: 600 }}>
-                Projects
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <FolderCopy sx={pageHeaderIconSx} />
+                <Typography variant="h1" sx={pageHeaderTitleSx}>
+                  Projects
+                </Typography>
+              </Box>
               {hasProjects && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.5, fontSize: '0.875rem' }}
+                >
                   {projects.length} {projects.length === 1 ? 'project' : 'projects'}
                 </Typography>
               )}
@@ -85,7 +92,7 @@ export default function ProjectsPage() {
               variant="contained"
               startIcon={<Add />}
               onClick={handleCreateClick}
-              sx={{ borderRadius: 2 }}
+              sx={pageHeaderButtonSx}
             >
               New Project
             </Button>

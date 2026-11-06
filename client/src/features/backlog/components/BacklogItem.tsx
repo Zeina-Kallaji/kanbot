@@ -212,8 +212,8 @@ export default function BacklogItem({
             variant="outlined"
             label={
               todo.storyPoints !== null
-                ? `${todo.storyPoints} SP`
-                : '0 SP'
+                ? `${todo.storyPoints} pts`
+                : '0 pts'
             }
             sx={{
               width: 56,

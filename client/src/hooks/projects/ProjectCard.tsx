@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Card,
@@ -14,20 +14,21 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-} from '@mui/material';
+} from "@mui/material";
 
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import SprintIcon from '@mui/icons-material/Flag';
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import SprintIcon from "@mui/icons-material/Flag";
 
-import type { ProjectWithStats } from '../../types/api';
+import type { ProjectWithStats } from "../../types/api";
 
-import { ProjectFormDialog } from './ProjectFormDialog';
-import ConfirmDialog from '../../components/ConfirmDialog';
+import { ProjectFormDialog } from "./ProjectFormDialog";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
-import { useDeleteProject } from '../../hooks/projects/useDeleteProject';
+import { useDeleteProject } from "../../hooks/projects/useDeleteProject";
+import { colors } from "../../theme/theme";
 
 interface ProjectCardProps {
   project: ProjectWithStats;
@@ -49,7 +50,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on menu button
-    if ((e.target as HTMLElement).closest('button')) {
+    if ((e.target as HTMLElement).closest("button")) {
       return;
     }
     navigate(`/projects/${project.id}/backlog`);
@@ -59,29 +60,38 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     <>
       <Card
         sx={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          '&:hover': {
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          cursor: "pointer",
+          transition: "all 0.2s",
+          "&:hover": {
             boxShadow: 3,
-            transform: 'translateY(-2px)',
+            transform: "translateY(-2px)",
           },
         }}
         onClick={handleCardClick}
       >
-        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <CardContent
+          sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
+        >
           {/* Header with Key and Menu */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              mb: 2,
+            }}
+          >
             <Chip
               label={project.key}
               size="small"
               sx={{
-                bgcolor: 'primary.main',
-                color: 'white',
+                bgcolor: colors.primary.main,
+                color: "white",
                 fontWeight: 600,
-                fontSize: '0.75rem',
+                fontSize: "0.75rem",
               }}
             />
 
@@ -104,36 +114,38 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           </Typography>
 
           {/* Description */}
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
-            sx={{ 
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
               mb: 3,
               flexGrow: 1,
-              display: '-webkit-box',
+              display: "-webkit-box",
               WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}
           >
-            {project.description || 'No description provided.'}
+            {project.description || "No description provided."}
           </Typography>
 
           <Divider sx={{ mb: 2 }} />
 
           {/* Stats */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <FolderOpenIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FolderOpenIcon sx={{ fontSize: 16, color: "text.secondary" }} />
               <Typography variant="body2" color="text.secondary">
                 {project.stats.backlogCount} backlog items
               </Typography>
             </Box>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <SprintIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <SprintIcon sx={{ fontSize: 16, color: "text.secondary" }} />
               <Typography variant="body2" color="text.secondary">
-                {project.stats.activeSprint ? `Sprint: ${project.stats.activeSprint.name}` : 'No active sprint'}
+                {project.stats.activeSprint
+                  ? `Sprint: ${project.stats.activeSprint.name}`
+                  : "No active sprint"}
               </Typography>
             </Box>
           </Box>
@@ -148,7 +160,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             }}
             sx={{
               borderRadius: 1.5,
-              textTransform: 'none',
+              textTransform: "none",
               fontWeight: 500,
             }}
           >
@@ -183,10 +195,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             setAnchorEl(null);
             setDeleteOpen(true);
           }}
-          sx={{ color: 'error.main' }}
+          sx={{ color: "error.main" }}
         >
           <ListItemIcon>
-            <DeleteOutlinedIcon fontSize="small" sx={{ color: 'error.main' }} />
+            <DeleteOutlinedIcon fontSize="small" sx={{ color: "error.main" }} />
           </ListItemIcon>
           <ListItemText>Delete</ListItemText>
         </MenuItem>
