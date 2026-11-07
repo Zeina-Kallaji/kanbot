@@ -49,7 +49,7 @@ export default function BacklogList({
         data-drop-list={listId}
         spacing={0}
         sx={{
-          minHeight: 8,
+          minHeight: orderedTodos.length === 0 ? 48 : 8,
           borderRadius: 1,
           outline: isOver ? '2px solid' : 'none',
           outlineColor: 'primary.main',

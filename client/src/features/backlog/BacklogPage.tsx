@@ -7,9 +7,11 @@ import {
   MouseSensor,
   TouchSensor,
   closestCenter,
+  pointerWithin,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type CollisionDetection,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useQueries } from '@tanstack/react-query';
@@ -95,6 +97,13 @@ function parseListId(listId: string): DropList | null {
     status,
   };
 }
+
+const pointerFirstCollisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  return pointerCollisions.length > 0
+    ? pointerCollisions
+    : closestCenter(args);
+};
 
 export default function BacklogPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -520,7 +529,7 @@ export default function BacklogPage() {
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={pointerFirstCollisionDetection}
         onDragStart={(event) => {
           const todo = event.active.data.current?.todo;
           setActiveDragTodo(todo && typeof todo === 'object' ? todo as Todo : null);
@@ -622,18 +631,18 @@ export default function BacklogPage() {
                     </Stack>
                   )}
                 </Box>
-              ) : (
-                <BacklogList
-                  todos={visibleTodos}
-                  onTodoClick={handleOpenTodo}
-                  listId="backlog"
-                  isDraggable={!filtersActive}
-                  sprints={sprintOptions}
-                  onMove={handleMoveTodo}
-                  onReorder={handleReorderTodo}
-                  onDelete={setTodoToDelete}
-                />
-              )}
+              ) : null}
+
+              <BacklogList
+                todos={visibleTodos}
+                onTodoClick={handleOpenTodo}
+                listId="backlog"
+                isDraggable={!filtersActive}
+                sprints={sprintOptions}
+                onMove={handleMoveTodo}
+                onReorder={handleReorderTodo}
+                onDelete={setTodoToDelete}
+              />
 
               <Box sx={{ p: { xs: 1.5, sm: 3 }, pt: { xs: 0.5, sm: 3 } }}>
                 <QuickCreateTodo

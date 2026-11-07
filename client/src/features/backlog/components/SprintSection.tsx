@@ -146,15 +146,7 @@ export default function SprintSection({
               .filter(Boolean)
               .join(" · ")}
           </Typography>
-          {activeSprintExists && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ pl: { xs: 4, md: 0 }, flexBasis: "100%" }}
-            >
-              Another sprint is active. Complete it before starting this sprint.
-            </Typography>
-          )}
+         
         </Stack>
 
         <Stack

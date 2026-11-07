@@ -57,7 +57,6 @@ import { useSprintMutations } from '../../hooks/sprints/useSprintMutations';
 import { sprintKeys } from '../../hooks/sprints/sprintKeys';
 import { todoKeys } from '../../hooks/todos/todoKeys';
 import { projectKeys } from '../../hooks/projects/projectKeys';
-import { pageHeaderIconSx } from '../../components/layout/pageHeaderStyles';
 import { colors } from '../../theme/theme';
 
 interface AssistantDrawerProps {
@@ -420,7 +419,7 @@ function AssistantDrawer({
         <Box sx={{ px: 2, pt: 1.5, pb: 1 }}>
           <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-              <SmartToy sx={pageHeaderIconSx} />
+              <SmartToy sx={{ fontSize: 24, color: '#2d4e94', flexShrink: 0 }} />
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 Kanbot Assistant
               </Typography>

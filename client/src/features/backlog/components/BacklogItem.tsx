@@ -1,6 +1,6 @@
 // client/src/features/backlog/components/BacklogItem.tsx
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   Box,
@@ -62,6 +62,7 @@ export default function BacklogItem({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -70,6 +71,11 @@ export default function BacklogItem({
     disabled: !isDraggable,
     data: { listId, todo },
   });
+  const draggedRef = useRef(false);
+
+  useEffect(() => {
+    if (isDragging) draggedRef.current = true;
+  }, [isDragging]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -90,9 +96,16 @@ export default function BacklogItem({
     <Paper
       ref={setNodeRef}
       variant="outlined"
-      {...attributes}
-      {...listeners}
-      onClick={() => onClick(todo)}
+      onPointerDownCapture={() => {
+        draggedRef.current = false;
+      }}
+      onClick={() => {
+        if (draggedRef.current) {
+          draggedRef.current = false;
+          return;
+        }
+        onClick(todo);
+      }}
       sx={{
         transform: CSS.Transform.toString(transform),
         opacity: isDragging ? 0.45 : 1,
@@ -147,7 +160,12 @@ export default function BacklogItem({
             gridArea: 'main',
             alignItems: 'center',
             minWidth: 0,
+            cursor: isDragging ? 'grabbing' : 'grab',
+            touchAction: 'none',
           }}
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
         >
           <Typography
             variant="body2"
