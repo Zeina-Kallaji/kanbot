@@ -171,14 +171,23 @@ export default function SprintsPage() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '360px minmax(0, 1fr)' }, gap: 3 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: '360px minmax(0, 1fr)' }, gap: { xs: 2, md: 3 } }}>
         <Paper variant="outlined" sx={{ p: 2, height: 'fit-content' }}>
           <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>
             All sprints
           </Typography>
 
-          <Stack spacing={1.5}>
+          {/* Below lg: a swipeable row of sprint cards; lg+: vertical list. */}
+          <Stack
+            direction={{ xs: 'row', lg: 'column' }}
+            sx={{
+              gap: 1.5,
+              overflowX: { xs: 'auto', lg: 'visible' },
+              pb: { xs: 1, lg: 0 },
+              '& > .MuiPaper-root': { flex: { xs: '0 0 220px', lg: '0 0 auto' } },
+            }}
+          >
             {sprints.map((sprint) => {
               const sprintStats = buildStats(sprint);
               const isSelected = sprint.id === selectedSprintId;
@@ -263,8 +272,8 @@ export default function SprintsPage() {
               { label: 'Carried over', value: String(stats.carriedOver) },
               { label: 'Completion %', value: `${stats.completion}%` },
             ].map((item) => (
-              <Grid key={item.label} size={{ xs: 12, sm: 6, lg: 3 }}>
-                <Paper variant="outlined" sx={{ p: 2, textAlign: 'center', height: '100%', backgroundColor: '#B9C9EE' }}>
+              <Grid key={item.label} size={{ xs: 6, lg: 3 }}>
+                <Paper variant="outlined" sx={{ p: { xs: 1.25, sm: 2 }, textAlign: 'center', height: '100%', backgroundColor: '#B9C9EE' }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     {item.label}
                   </Typography>

@@ -16,6 +16,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 
 import type {
@@ -92,6 +94,9 @@ export default function TodoDetailsDialog({
     useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] =
     useState(false);
+  const theme = useTheme();
+  // Phones get a full-screen sheet: the form has 9 fields.
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     if (open && todo) {
@@ -189,6 +194,7 @@ export default function TodoDetailsDialog({
         onClose={requestClose}
         fullWidth
         maxWidth="sm"
+        fullScreen={fullScreen}
       >
         <DialogTitle sx={{ fontWeight: 700 }}>
           Todo Details
@@ -362,7 +368,7 @@ export default function TodoDetailsDialog({
             <span />
           )}
 
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} sx={{ '& .MuiButton-root': { whiteSpace: 'nowrap' } }}>
             <Button
               onClick={requestClose}
               disabled={isSaving || isDeleting}
@@ -444,4 +450,4 @@ export default function TodoDetailsDialog({
       </Dialog>
     </>
   );
-}
+}

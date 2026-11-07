@@ -108,7 +108,7 @@ export default function BacklogItem({
         borderBottom: compact ? 1 : undefined,
         borderColor: compact ? 'divider' : undefined,
         cursor: 'pointer',
-        touchAction: isDraggable ? 'none' : 'auto',
+        touchAction: 'manipulation',
         transition: transition
           ? `${transition}, border-color 0.2s, background-color 0.2s`
           : 'border-color 0.2s, background-color 0.2s',
@@ -122,22 +122,31 @@ export default function BacklogItem({
         },
       }}
     >
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={compact ? 1 : 2}
+      {/* Phones/tablets: [key + title | menu] on row 1, chips on row 2.
+          Desktop (md+): everything on one row. */}
+      <Box
         sx={{
-          alignItems: { xs: 'stretch', md: 'center' },
-          justifyContent: 'space-between',
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: 'minmax(0, 1fr) auto',
+            md: 'minmax(0, 1fr) auto auto',
+          },
+          gridTemplateAreas: {
+            xs: '"main menu" "meta meta"',
+            md: '"main meta menu"',
+          },
+          columnGap: compact ? 1 : 2,
+          rowGap: 1,
+          alignItems: 'center',
         }}
       >
         <Stack
           direction="row"
           spacing={compact ? 1 : 1.5}
           sx={{
+            gridArea: 'main',
             alignItems: 'center',
-            flex: 1,
             minWidth: 0,
-            flexWrap: { xs: 'wrap', md: 'nowrap' },
           }}
         >
           <Typography
@@ -158,7 +167,11 @@ export default function BacklogItem({
                 fontWeight: 600,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+                overflowWrap: 'anywhere',
+                // 2 lines on small screens, single ellipsised line on desktop
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: { xs: 2, md: 1 },
               }}
             >
               {todo.title}
@@ -177,10 +190,12 @@ export default function BacklogItem({
           direction="row"
           spacing={1.75}
           sx={{
+            gridArea: 'meta',
             alignItems: 'center',
-            flexShrink: 0,
+            minWidth: 0,
+            flexWrap: 'nowrap',
             justifyContent: { md: 'flex-end' },
-            width: { md: 228 },
+            width: { md: 'max-content' },
           }}
         >
           <TodoLabels type={todo.type} priority={todo.priority} />
@@ -195,6 +210,7 @@ export default function BacklogItem({
             }
             sx={{
               width: 56,
+              flexShrink: 0,
               height: 24,
               borderRadius: 12,
               '& .MuiChip-label': { px: 0.5, textAlign: 'center' },
@@ -202,7 +218,7 @@ export default function BacklogItem({
           />
         </Stack>
 
-        <Box sx={{ flexShrink: 0 }}>
+        <Box sx={{ gridArea: 'menu', flexShrink: 0 }}>
           <IconButton
             size="small"
             onPointerDown={(event) => event.stopPropagation()}
@@ -261,7 +277,7 @@ export default function BacklogItem({
             </MenuItem>
           </Menu>
         </Box>
-      </Stack>
+      </Box>
     </Paper>
   );
-}
+}

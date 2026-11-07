@@ -30,11 +30,17 @@ html {
   font-synthesis: none;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   background-color: #F6F8FC;
   color: #202B3C;
@@ -49,6 +55,12 @@ body {
 #root {
   width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Media never forces a page wider than the screen */
+img, svg, video {
+  max-width: 100%;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */

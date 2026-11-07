@@ -22,7 +22,7 @@ export default function NotFoundPage() {
         <Stack spacing={3} sx={{ alignItems: "center", textAlign: "center" }}>
           <SearchOff
             sx={{
-              fontSize: 120,
+              fontSize: { xs: 80, sm: 120 },
               color: 'text.disabled',
               opacity: 0.5,
             }}

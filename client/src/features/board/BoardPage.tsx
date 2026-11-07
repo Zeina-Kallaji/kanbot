@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   DndContext,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -104,6 +105,7 @@ function BoardColumn({ status, label, count, children }: BoardColumnProps) {
         p: { xs: 1.5, sm: 2 },
         minWidth: 0,
         overflow: 'hidden',
+        scrollSnapAlign: 'start',
         outline: isOver ? '2px solid' : 'none',
         outlineColor: 'primary.main',
         bgcolor: isOver ? 'primary.50' : 'background.paper',
@@ -148,7 +150,7 @@ function BoardTodoCard({ todo, onClick }: BoardTodoCardProps) {
       sx={{
         minWidth: 0,
         cursor: isDragging ? 'grabbing' : 'grab',
-        touchAction: 'none',
+        touchAction: 'manipulation',
         opacity: isDragging ? 0.45 : 1,
         transform: CSS.Translate.toString(transform),
       }}
@@ -181,7 +183,9 @@ export default function BoardPage() {
   const moveTodoMutation = useMoveTodo();
   const updateTodoMutation = useUpdateTodo();
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    // Touch: press-and-hold to drag so swiping still scrolls the board/page.
+    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
@@ -383,7 +387,7 @@ export default function BoardPage() {
                 spacing={{ xs: 0.25, sm: 1.5 }}
                 sx={{ alignItems: { sm: 'baseline' }, minWidth: 0 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
                   {sprint.name}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -391,15 +395,20 @@ export default function BoardPage() {
                 </Typography>
               </Stack>
               {sprint.goal && (
-                <Typography variant="body2" sx={{ mt: 0.25, color: 'text.primary' }}>
+                <Typography variant="body2" sx={{ mt: 0.25, color: 'text.primary', overflowWrap: 'anywhere' }}>
                   Goal: {sprint.goal}
                 </Typography>
               )}
             </Box>
             <Stack
               direction="row"
-              spacing={1}
-              sx={{ flexShrink: 0, alignSelf: { xs: 'stretch', sm: 'auto' } }}
+              sx={{
+                flexShrink: 0,
+                flexWrap: 'wrap',
+                gap: 1,
+                alignSelf: { xs: 'stretch', sm: 'auto' },
+                '& > .MuiButton-root': { flex: { xs: '1 1 auto', sm: '0 0 auto' } },
+              }}
             >
               <Button
                 variant="outlined"
@@ -407,7 +416,13 @@ export default function BoardPage() {
                 startIcon={<AutoAwesomeOutlined />}
                 onClick={() => void handleSummarizeSprint()}
                 disabled={summaryPending}
-                sx={pageHeaderButtonSx}
+                sx={{
+                  minHeight: { xs: 40, sm: 42 },
+                  px: 2,
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 {summaryPending
                   ? 'Summarizing…'
@@ -421,7 +436,7 @@ export default function BoardPage() {
                   size="small"
                   startIcon={<CheckCircleOutlined />}
                   onClick={() => setCompleteDialogOpen(true)}
-                  sx={{ ...pageHeaderButtonSx, whiteSpace: 'nowrap' }}
+                  sx={{ ...pageHeaderButtonSx, whiteSpace: 'nowrap', color: '#fff' }}
                 >
                   Complete sprint
                 </Button>
@@ -438,7 +453,7 @@ export default function BoardPage() {
               value={progress}
               sx={{ flex: 1, height: 8, borderRadius: 4 }}
             />
-            <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: { sm: 'nowrap' } }}>
               {sprint.stats.donePoints} / {sprint.stats.totalPoints} pts done
             </Typography>
           </Stack>
@@ -455,16 +470,29 @@ export default function BoardPage() {
           collisionDetection={closestCenter}
           onDragEnd={(event) => void handleDragEnd(event)}
         >
+          {/* Below lg the 4 columns scroll sideways (snap per column) instead of
+              stacking into one very long page. From lg up they share the width. */}
           <Box
+            tabIndex={0}
+            role="region"
+            aria-label="Sprint board columns"
             sx={{
               display: 'grid',
-              gridTemplateColumns: {
-                xs: 'minmax(0, 1fr)',
-                sm: 'repeat(2, minmax(0, 1fr))',
-                lg: 'repeat(4, minmax(0, 1fr))',
+              gridAutoFlow: { xs: 'column', lg: 'row' },
+              gridAutoColumns: {
+                xs: 'minmax(260px, 82%)',
+                sm: 'minmax(280px, 46%)',
+                lg: 'minmax(0, 1fr)',
               },
+              gridTemplateColumns: { lg: 'repeat(4, minmax(0, 1fr))' },
               gap: 1.5,
               alignItems: 'start',
+              overflowX: { xs: 'auto', lg: 'visible' },
+              scrollSnapType: { xs: 'x proximity', lg: 'none' },
+              overscrollBehaviorX: 'contain',
+              pb: { xs: 1, lg: 0 },
+              mx: { xs: -1, sm: 0 },
+              px: { xs: 1, sm: 0 },
             }}
           >
             {columns.map(({ status, label }) => (

@@ -4,7 +4,8 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -165,7 +166,9 @@ export default function BacklogPage() {
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    // Touch: press-and-hold to drag so swiping still scrolls the page.
+    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -454,7 +457,7 @@ export default function BacklogPage() {
         onAskAI={assistantActions.openAssistant}
       />
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
         {pageError && (
           <Alert severity="error" onClose={() => setPageError(null)} sx={{ mb: 2 }}>
             {pageError}
@@ -464,7 +467,7 @@ export default function BacklogPage() {
       <Stack
         direction={{ xs: 'column', lg: 'row' }}
         spacing={1.5}
-        sx={{ alignItems: { lg: 'center' }, mb: 3, minWidth: 0 }}
+        sx={{ alignItems: { xs: 'stretch', lg: 'center' }, mb: { xs: 2, md: 3 }, minWidth: 0 }}
       >
         <TodoFilters
           search={search}
@@ -474,18 +477,18 @@ export default function BacklogPage() {
           onPriorityChange={setPriority}
           onTypeChange={setType}
         />
-        <Stack
-          direction="row"
-          spacing={1}
+        <Box
           sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(3, auto)' },
+            justifyContent: { sm: 'start', lg: 'end' },
             width: { xs: '100%', lg: 'auto' },
-            flexWrap: 'wrap',
             gap: 1,
             flexShrink: 0,
+            '& .MuiButton-root': { whiteSpace: 'nowrap' },
           }}
         >
           <Button
-            sx={{ flex: { xs: '1 1 100%', sm: '0 1 auto' } }}
             variant="outlined"
             startIcon={<AutoAwesomeOutlined />}
             onClick={assistantActions.openGenerateTodos}
@@ -493,7 +496,6 @@ export default function BacklogPage() {
             Generate todos with AI
           </Button>
           <Button
-            sx={{ flex: { xs: '1 1 100%', sm: '0 1 auto' } }}
             variant="outlined"
             startIcon={<BoltOutlined />}
             onClick={assistantActions.openPlanSprint}
@@ -501,14 +503,13 @@ export default function BacklogPage() {
             Plan sprint with AI
           </Button>
           <Button
-            sx={{ flex: { xs: '1 1 100%', sm: '0 1 auto' } }}
             variant="contained"
             startIcon={<AddOutlined />}
             onClick={() => openSprintDialog('create')}
           >
             Create sprint
           </Button>
-        </Stack>
+        </Box>
       </Stack>
 
       {filtersActive && (
@@ -634,7 +635,7 @@ export default function BacklogPage() {
                 />
               )}
 
-              <Box sx={{ p: { xs: 2, sm: 3 } }}>
+              <Box sx={{ p: { xs: 1.5, sm: 3 }, pt: { xs: 0.5, sm: 3 } }}>
                 <QuickCreateTodo
                   onCreate={handleCreateTodo}
                   isCreating={createTodoMutation.isPending}

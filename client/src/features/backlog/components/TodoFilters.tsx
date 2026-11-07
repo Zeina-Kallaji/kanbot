@@ -34,22 +34,25 @@ export default function TodoFilters({
 }: TodoFiltersProps) {
   return (
     <Stack
-      direction={{ xs: 'column', md: 'row' }}
+      direction="row"
       sx={{
         gap: 1.5,
         flex: 1,
         minWidth: 0,
+        flexWrap: { xs: 'wrap', md: 'nowrap' },
       }}
     >
       <TextField
-        sx={{ flex: 1, minWidth: { md: 200 } }}
+        type="search"
+        slotProps={{ htmlInput: { 'aria-label': 'Search todos' } }}
+        sx={{ flex: { xs: '1 1 100%', md: 1 }, minWidth: { md: 200 } }}
         size="small"
         placeholder="Search todos..."
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
       />
 
-      <FormControl sx={{ minWidth: { xs: '100%', md: 150 } }} size="small">
+      <FormControl sx={{ flex: { xs: '1 1 0', md: '0 0 auto' }, minWidth: { xs: 120, md: 150 } }} size="small">
         <InputLabel>Priority</InputLabel>
 
         <Select
@@ -67,7 +70,7 @@ export default function TodoFilters({
         </Select>
       </FormControl>
 
-      <FormControl sx={{ minWidth: { xs: '100%', md: 130 } }} size="small">
+      <FormControl sx={{ flex: { xs: '1 1 0', md: '0 0 auto' }, minWidth: { xs: 120, md: 130 } }} size="small">
         <InputLabel>Type</InputLabel>
 
         <Select
@@ -85,4 +88,4 @@ export default function TodoFilters({
       </FormControl>
     </Stack>
   );
-}
+}

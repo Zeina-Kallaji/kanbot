@@ -87,10 +87,10 @@ export default function SprintSection({
       }}
     >
       <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={{ xs: 1, sm: 2 }}
+        direction={{ xs: "column", md: "row" }}
+        spacing={{ xs: 1, md: 2 }}
         sx={{
-          alignItems: { sm: "center" },
+          alignItems: { md: "center" },
           justifyContent: "space-between",
           minHeight: 40,
           px: { xs: 1, sm: 1.5 },
@@ -99,9 +99,15 @@ export default function SprintSection({
         }}
       >
         <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={{ xs: 0.5, sm: 2 }}
-          sx={{ alignItems: { sm: "center" }, minWidth: 0, flex: 1 }}
+          direction="row"
+          sx={{
+            alignItems: "center",
+            flexWrap: "wrap",
+            columnGap: 2,
+            rowGap: 0.25,
+            minWidth: 0,
+            flex: 1,
+          }}
         >
           <Stack
             direction="row"
@@ -125,7 +131,7 @@ export default function SprintSection({
               sx={{
                 color: "text.primary",
                 fontWeight: 600,
-                whiteSpace: "nowrap",
+                overflowWrap: "anywhere",
               }}
             >
               {sprint.name} ({sprint.status})
@@ -134,7 +140,7 @@ export default function SprintSection({
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ pl: { xs: 4, sm: 0 }, whiteSpace: "nowrap" }}
+            sx={{ pl: { xs: 4, md: 0 } }}
           >
             {[dates, `${todos.length} todos`, `${totalPoints} pts`]
               .filter(Boolean)
@@ -144,7 +150,7 @@ export default function SprintSection({
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ pl: { xs: 4, sm: 0 } }}
+              sx={{ pl: { xs: 4, md: 0 }, flexBasis: "100%" }}
             >
               Another sprint is active. Complete it before starting this sprint.
             </Typography>
@@ -156,8 +162,9 @@ export default function SprintSection({
           spacing={0.75}
           sx={{
             alignItems: "center",
-            justifyContent: "flex-end",
+            justifyContent: { xs: "flex-start", md: "flex-end" },
             flexShrink: 0,
+            pl: { xs: 4, md: 0 },
           }}
         >
           <Button

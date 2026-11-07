@@ -186,9 +186,48 @@ const theme = createTheme({
 
     MuiDialog: {
       styleOverrides: {
-        paper: {
+        paper: ({ theme }) => ({
           borderRadius: 10,
           boxShadow: "0 8px 24px rgba(32, 43, 60, 0.15)",
+          // Phones: keep a small even gutter instead of MUI's 32px margin.
+          [theme.breakpoints.down("sm")]: {
+            margin: 12,
+            width: "calc(100% - 24px)",
+            maxWidth: "calc(100% - 24px)",
+            maxHeight: "calc(100% - 24px)",
+          },
+          // Full-screen dialogs must ignore the gutter above.
+          "&.MuiDialog-paperFullScreen": {
+            margin: 0,
+            width: "100%",
+            maxWidth: "100%",
+            maxHeight: "100%",
+            borderRadius: 0,
+          },
+        }),
+      },
+    },
+
+    MuiDialogActions: {
+      styleOverrides: {
+        root: { flexWrap: "wrap", gap: 6 },
+      },
+    },
+
+    // 16px inputs on phones stop iOS Safari from zooming in on focus.
+    MuiInputBase: {
+      styleOverrides: {
+        input: ({ theme }) => ({
+          [theme.breakpoints.down("sm")]: { fontSize: "1rem" },
+        }),
+      },
+    },
+
+    // Bigger tap targets on touch screens (WCAG 2.5.8), no change for mouse.
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          "@media (pointer: coarse)": { minWidth: 40, minHeight: 40 },
         },
       },
     },

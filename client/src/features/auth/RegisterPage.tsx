@@ -125,7 +125,7 @@ export default function RegisterPage() {
         alignItems: 'center',
         justifyContent: 'center',
         bgcolor: 'background.default',
-        py: 8,
+        py: { xs: 3, sm: 8 },
       }}
     >
       <Container maxWidth="xs">
@@ -156,7 +156,7 @@ export default function RegisterPage() {
             elevation={2}
             sx={{
               width: '100%',
-              p: 4,
+              p: { xs: 2.5, sm: 4 },
               borderRadius: 2,
             }}
           >

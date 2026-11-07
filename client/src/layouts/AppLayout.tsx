@@ -133,7 +133,10 @@ export default function AppLayout() {
         display: 'flex',
         alignItems: 'center',
         height: 56,
-        px: 1.5,
+        px: 1,
+        position: 'sticky',
+        top: 0,
+        zIndex: (t) => t.zIndex.appBar,
         bgcolor: 'background.paper',
         borderBottom: '1px solid',
         borderColor: 'divider',
@@ -142,7 +145,7 @@ export default function AppLayout() {
       <IconButton
         aria-label="Open navigation"
         onClick={() => setMobileSidebarOpen(true)}
-        edge="start"
+        sx={{ width: 44, height: 44 }}
       >
         <MenuOutlined />
       </IconButton>
@@ -177,6 +180,7 @@ export default function AppLayout() {
           display: { xs: 'block', md: 'block' },
           '& .MuiDrawer-paper': {
             width: SIDEBAR_WIDTH,
+            maxWidth: '85vw',
             boxSizing: 'border-box',
             borderRight: '1px solid',
             borderColor: 'divider',
@@ -542,7 +546,7 @@ export default function AppLayout() {
           flexGrow: 1,
           minWidth: 0,
           bgcolor: 'background.default',
-          minHeight: '100vh',
+          minHeight: '100dvh',
         }}
       >
         {mobileNavBeforePageHeader && mobileNavigation}
