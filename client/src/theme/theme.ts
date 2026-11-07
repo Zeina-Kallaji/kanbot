@@ -14,7 +14,7 @@ const colors = {
     soft: "#F1F5FC",
   },
   green: {
-    main: "#269B75",
+    main: "#BDCF",
     dark: "#197B5C",
     light: "#DDF4EA",
     soft: "#EFF9F4",
@@ -30,10 +30,10 @@ const colors = {
     textMuted: "#98A2B3",
   },
   semantic: {
-    success: "#55965c",
-    warning: "#f6c678",
-    error: "#f87064",
-    info: "#a2bad9",
+    success: "#b7c7a5",
+    warning: "#f6b178",
+    error: "#ff6b5e",
+    info: "#ffe99a",
     successBg: "#afb1b0",
     warningBg: "#FFF8E6",
     errorBg: "#FFEBEE",

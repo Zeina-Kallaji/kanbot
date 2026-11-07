@@ -17,6 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import ErrorState from '../../components/ErrorState';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import TodoLabels from '../../components/TodoLabels';
 import { useSprintBoard } from '../../hooks/sprints/useSprintBoard';
 import { useSummarizeSprint } from '../../hooks/sprints/useSummarizeSprint';
 import { useSprints } from '../../hooks/sprints/useSprints';
@@ -278,6 +279,7 @@ export default function SprintsPage() {
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
+                            flexWrap: 'wrap',
                             gap: 2,
                             p: 1,
                             borderRadius: 1,
@@ -292,6 +294,7 @@ export default function SprintsPage() {
                             <Typography variant="body2" color="text.secondary">
                               {todo.title}
                             </Typography>
+                            <TodoLabels type={todo.type} priority={todo.priority} />
                           </Box>
                           <Chip
                             label={todoStatusLabelMap[todo.status]}

@@ -38,6 +38,7 @@ import {
 } from '@mui/icons-material';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
+import TodoLabels from '../../components/TodoLabels';
 import type {
   CompleteSprintRequest,
   SprintSummary,
@@ -159,9 +160,8 @@ function BoardTodoCard({ todo, onClick }: BoardTodoCardProps) {
         <Typography sx={{ my: 0.5, fontWeight: 600, overflowWrap: 'anywhere' }}>
           {todo.title}
         </Typography>
-        <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-          <Chip size="small" label={todo.type} variant="outlined" />
-          <Chip size="small" label={todo.priority} />
+        <Stack direction="row" spacing={0.6} sx={{ flexWrap: 'wrap', gap: 1.75 }}>
+          <TodoLabels type={todo.type} priority={todo.priority} />
           <Chip size="small" label={`${todo.storyPoints ?? 0} pts`} variant="outlined" />
         </Stack>
       </CardContent>
@@ -474,7 +474,7 @@ export default function BoardPage() {
                 label={label}
                 count={board[status].length}
               >
-                <Stack spacing={1} sx={{ minHeight: 40 }}>
+                <Stack spacing={2} sx={{ minHeight: 40 }}>
                   {board[status].map((todo) => (
                     <BoardTodoCard
                       key={todo.id}

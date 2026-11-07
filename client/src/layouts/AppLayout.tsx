@@ -122,6 +122,44 @@ export default function AppLayout() {
     assistantRef.current?.openPlanSprint();
     setAssistantOpen(true);
   };
+  const mobileNavBeforePageHeader =
+    isMobile &&
+    (location.pathname.includes('/board') ||
+      location.pathname.includes('/sprints'));
+  const mobileNavigation = isMobile ? (
+    <Box
+      component="header"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        height: 56,
+        px: 1.5,
+        bgcolor: 'background.paper',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <IconButton
+        aria-label="Open navigation"
+        onClick={() => setMobileSidebarOpen(true)}
+        edge="start"
+      >
+        <MenuOutlined />
+      </IconButton>
+      <Box
+        component="img"
+        src="/kanbot-logo.svg"
+        alt="Kanbot"
+        sx={{
+          display: 'block',
+          width: 104,
+          maxWidth: 'calc(100vw - 80px)',
+          height: 'auto',
+          ml: 1,
+        }}
+      />
+    </Box>
+  ) : null;
 
   return (
     <AssistantContext.Provider
@@ -507,32 +545,9 @@ export default function AppLayout() {
           minHeight: '100vh',
         }}
       >
+        {mobileNavBeforePageHeader && mobileNavigation}
         <TopBar onAskAI={openAssistant} disabled={!projectId} />
-        {isMobile && (
-          <Box
-            component="header"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              height: 56,
-              px: 1.5,
-              bgcolor: 'background.paper',
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
-            <IconButton
-              aria-label="Open navigation"
-              onClick={() => setMobileSidebarOpen(true)}
-              edge="start"
-            >
-              <MenuOutlined />
-            </IconButton>
-            <Typography variant="h3" sx={{ ml: 1, color: 'primary.main' }}>
-              Kanbot
-            </Typography>
-          </Box>
-        )}
+        {!mobileNavBeforePageHeader && mobileNavigation}
         <Outlet />
       </Box>
       <AssistantDrawer

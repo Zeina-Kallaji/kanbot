@@ -25,6 +25,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 import type { Todo } from '../../../types/api';
 import type { Sprint } from '../../../types/api';
+import TodoLabels from '../../../components/TodoLabels';
 
 interface BacklogItemProps {
   todo: Todo;
@@ -39,13 +40,6 @@ interface BacklogItemProps {
   canMoveDown: boolean;
   compact: boolean;
 }
-
-const priorityColors = {
-  low: 'default',
-  medium: 'info',
-  high: 'warning',
-  urgent: 'error',
-} as const;
 
 export default function BacklogItem({
   todo,
@@ -175,7 +169,7 @@ export default function BacklogItem({
 
         <Stack
           direction="row"
-          spacing={1}
+          spacing={1.75}
           sx={{
             alignItems: 'center',
             flexShrink: 0,
@@ -183,29 +177,7 @@ export default function BacklogItem({
             width: { md: 228 },
           }}
         >
-          <Chip
-            size="small"
-            label={todo.type}
-            variant="outlined"
-            sx={{
-              width: 68,
-              height: 24,
-              borderRadius: 12,
-              '& .MuiChip-label': { px: 0.75, textAlign: 'center' },
-            }}
-          />
-
-          <Chip
-            size="small"
-            label={todo.priority}
-            color={priorityColors[todo.priority]}
-            sx={{
-              width: 76,
-              height: 24,
-              borderRadius: 12,
-              '& .MuiChip-label': { px: 0.75, textAlign: 'center' },
-            }}
-          />
+          <TodoLabels type={todo.type} priority={todo.priority} />
 
           <Chip
             size="small"
