@@ -27,6 +27,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   AddOutlined,
@@ -38,6 +40,7 @@ import {
 } from '@mui/icons-material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
+import kanbotLogoCircle from '../../../../design/logo/kanbot-logo-circle.svg';
 import type {
   ChatMessage,
   DraftTodo,
@@ -55,6 +58,7 @@ import { sprintKeys } from '../../hooks/sprints/sprintKeys';
 import { todoKeys } from '../../hooks/todos/todoKeys';
 import { projectKeys } from '../../hooks/projects/projectKeys';
 import { pageHeaderIconSx } from '../../components/layout/pageHeaderStyles';
+import { colors } from '../../theme/theme';
 
 interface AssistantDrawerProps {
   projectId: string;
@@ -109,6 +113,8 @@ function AssistantDrawer({
   open,
   onClose,
 }, ref) {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const queryClient = useQueryClient();
   const sprintMutations = useSprintMutations();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -518,7 +524,7 @@ function AssistantDrawer({
                 {message.role === 'assistant' && (
                   <Box
                     component="img"
-                    src="/kanbot-icon.svg"
+                    src={kanbotLogoCircle}
                     alt=""
                     aria-hidden="true"
                     sx={{ width: 22, height: 22, flexShrink: 0 }}
@@ -638,10 +644,37 @@ function AssistantDrawer({
         onClose={draftsPending ? undefined : () => setGenerateOpen(false)}
         fullWidth
         maxWidth="md"
+        fullScreen={isSmallScreen}
+        slotProps={{
+          paper: {
+            sx: {
+              display: 'flex',
+              flexDirection: 'column',
+              width: { xs: '100%', sm: 'calc(100vw - 48px)' },
+              maxWidth: { xs: '100%', sm: 820 },
+              height: { xs: '100dvh', sm: 'auto' },
+              maxHeight: { xs: '100dvh', sm: 'calc(100% - 48px)' },
+              m: { xs: 0, sm: 3 },
+              borderRadius: { xs: 0, sm: '20px' },
+              overflow: 'hidden',
+            },
+          },
+        }}
       >
-        <DialogTitle>Generate todos</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
+        <DialogTitle sx={{ px: { xs: '20px', sm: '20px' }, pt: '20px', pb: 0 }}>
+          Generate todos
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            p: '20px',
+            pt: '32px',
+          }}
+        >
+          <Stack sx={{ width: '100%', maxWidth: 680, mx: 'auto', gap: '20px' }}>
             {generateError && (
               <Alert
                 severity="error"
@@ -660,9 +693,27 @@ function AssistantDrawer({
               label="Describe a feature…"
               multiline
               minRows={2}
+              fullWidth
               value={generatePrompt}
               onChange={(event) => setGeneratePrompt(event.target.value)}
               disabled={draftsPending || drafts.length > 0}
+              sx={{
+                width: '100%',
+                maxWidth: 'none',
+                alignSelf: 'center',
+                mt: '8px',
+                overflow: 'visible',
+                '& .MuiOutlinedInput-root': {
+                  overflow: 'visible',
+                  backgroundColor: colors.neutral.surface,
+                },
+                '& .MuiOutlinedInput-notchedOutline legend': {
+                  height: '14px',
+                },
+                '& .MuiInputLabel-root': {
+                  overflow: 'visible',
+                },
+              }}
             />
             <TextField
               label="Number of todos"
@@ -676,7 +727,14 @@ function AssistantDrawer({
               }}
               slotProps={{ htmlInput: { min: 1, max: 10 } }}
               disabled={draftsPending || drafts.length > 0}
-              sx={{ maxWidth: 180 }}
+              sx={{
+                width: 260,
+                maxWidth: '100%',
+                alignSelf: 'flex-start',
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: colors.neutral.surface,
+                },
+              }}
             />
             {draftsPending && drafts.length === 0 && (
               <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
@@ -684,82 +742,185 @@ function AssistantDrawer({
                 <Typography>Generating draft todos…</Typography>
               </Stack>
             )}
-            {drafts.map((item) => (
-              <Stack
-                key={item.id}
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={1}
-                sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1.5 }}
-              >
-                <Checkbox
-                  checked={item.selected}
-                  onChange={(event) =>
-                    setDrafts((current) =>
-                      current.map((draft) =>
-                        draft.id === item.id ? { ...draft, selected: event.target.checked } : draft
-                      )
-                    )
-                  }
-                  slotProps={{ input: { 'aria-label': `Add ${item.draft.title}` } }}
-                  sx={{ alignSelf: 'flex-start', mt: -0.5 }}
-                />
-                <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-                  <TextField
-                    size="small"
-                    label="Title"
-                    value={item.draft.title}
-                    onChange={(event) => updateDraft(item.id, { title: event.target.value })}
-                  />
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                    <FormControl size="small" fullWidth>
-                      <InputLabel>Type</InputLabel>
-                      <Select
-                        label="Type"
-                        value={item.draft.type}
-                        onChange={(event) => updateDraft(item.id, { type: event.target.value as TodoType })}
-                      >
-                        {todoTypes.map((type) => <MenuItem key={type} value={type}>{type}</MenuItem>)}
-                      </Select>
-                    </FormControl>
-                    <FormControl size="small" fullWidth>
-                      <InputLabel>Priority</InputLabel>
-                      <Select
-                        label="Priority"
-                        value={item.draft.priority}
-                        onChange={(event) => updateDraft(item.id, { priority: event.target.value as TodoPriority })}
-                      >
-                        {priorities.map((priority) => <MenuItem key={priority} value={priority}>{priority}</MenuItem>)}
-                      </Select>
-                    </FormControl>
-                    <FormControl size="small" fullWidth>
-                      <InputLabel>Points</InputLabel>
-                      <Select
-                        label="Points"
-                        value={item.draft.storyPoints ?? ''}
-                        onChange={(event) => {
-                          const selectedValue = String(event.target.value);
-                          updateDraft(item.id, {
-                            storyPoints:
-                              selectedValue === ''
-                                ? null
-                                : Number(selectedValue) as StoryPoints,
-                          });
+            {drafts.length > 0 && (
+              <Stack sx={{ gap: '20px' }}>
+                {drafts.map((item) => (
+                  <Box
+                    key={item.id}
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: 'minmax(0, 1fr)',
+                        sm: '40px minmax(0, 1fr) 40px',
+                      },
+                      justifyContent: 'center',
+                      alignItems: 'start',
+                      p: { xs: '16px', sm: '20px' },
+                      backgroundColor: colors.neutral.todoCard,
+                      border: '1px solid',
+                      borderColor: colors.neutral.todoCardBorder,
+                      borderRadius: '14px',
+                      boxShadow: 'none',
+                      opacity: item.selected ? 1 : 0.6,
+                      transition: 'opacity 200ms ease, border-color 200ms ease',
+                      '&:hover': {
+                        borderColor: 'secondary.main',
+                      },
+                    }}
+                  >
+                    <Stack
+                      direction="row"
+                      sx={{
+                        gridColumn: { xs: '1', sm: '1' },
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Checkbox
+                        checked={item.selected}
+                        onChange={(event) =>
+                          setDrafts((current) =>
+                            current.map((draft) =>
+                              draft.id === item.id ? { ...draft, selected: event.target.checked } : draft
+                            )
+                          )
+                        }
+                        slotProps={{ input: { 'aria-label': `Add ${item.draft.title}` } }}
+                        sx={{ p: 0.5 }}
+                      />
+                      <Typography sx={{ display: { xs: 'block', sm: 'none' } }}>
+                        Include
+                      </Typography>
+                    </Stack>
+                    <Stack
+                      sx={{
+                        gap: '12px',
+                        gridColumn: { xs: '1', sm: '2' },
+                        width: '100%',
+                        maxWidth: 560,
+                        minWidth: 0,
+                        justifySelf: 'center',
+                      }}
+                    >
+                      <TextField
+                        size="small"
+                        label="Title"
+                        value={item.draft.title}
+                        onChange={(event) => updateDraft(item.id, { title: event.target.value })}
+                        sx={{
+                          width: '100%',
+                          '& .MuiOutlinedInput-root': {
+                            backgroundColor: colors.neutral.surface,
+                          },
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: {
+                            xs: 'repeat(2, minmax(0, 1fr))',
+                            sm: 'repeat(3, minmax(0, 1fr))',
+                          },
+                          gap: '12px',
+                          '@media (max-width:359px)': {
+                            gridTemplateColumns: 'minmax(0, 1fr)',
+                          },
                         }}
                       >
-                        {storyPoints.map((points) => (
-                          <MenuItem key={points || 'none'} value={points}>
-                            {points === '' ? 'None' : points}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                </Stack>
+                        <FormControl
+                          size="small"
+                          fullWidth
+                          sx={{
+                            minWidth: 0,
+                            '& .MuiOutlinedInput-root': {
+                              backgroundColor: colors.neutral.surface,
+                            },
+                          }}
+                        >
+                          <InputLabel>Type</InputLabel>
+                          <Select
+                            label="Type"
+                            value={item.draft.type}
+                            onChange={(event) => updateDraft(item.id, { type: event.target.value as TodoType })}
+                          >
+                            {todoTypes.map((type) => <MenuItem key={type} value={type}>{type}</MenuItem>)}
+                          </Select>
+                        </FormControl>
+                        <FormControl
+                          size="small"
+                          fullWidth
+                          sx={{
+                            minWidth: 0,
+                            '& .MuiOutlinedInput-root': {
+                              backgroundColor: colors.neutral.surface,
+                            },
+                          }}
+                        >
+                          <InputLabel>Priority</InputLabel>
+                          <Select
+                            label="Priority"
+                            value={item.draft.priority}
+                            onChange={(event) => updateDraft(item.id, { priority: event.target.value as TodoPriority })}
+                          >
+                            {priorities.map((priority) => <MenuItem key={priority} value={priority}>{priority}</MenuItem>)}
+                          </Select>
+                        </FormControl>
+                        <FormControl
+                          size="small"
+                          fullWidth
+                          sx={{
+                            minWidth: 0,
+                            gridColumn: { xs: '1 / -1', sm: 'auto' },
+                            '@media (max-width:359px)': {
+                              gridColumn: 'auto',
+                            },
+                            '& .MuiOutlinedInput-root': {
+                              backgroundColor: colors.neutral.surface,
+                            },
+                          }}
+                        >
+                          <InputLabel>Points</InputLabel>
+                          <Select
+                            label="Points"
+                            value={item.draft.storyPoints ?? ''}
+                            onChange={(event) => {
+                              const selectedValue = String(event.target.value);
+                              updateDraft(item.id, {
+                                storyPoints:
+                                  selectedValue === ''
+                                    ? null
+                                    : Number(selectedValue) as StoryPoints,
+                              });
+                            }}
+                          >
+                            {storyPoints.map((points) => (
+                              <MenuItem key={points || 'none'} value={points}>
+                                {points === '' ? 'None' : points}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Stack>
+                  </Box>
+                ))}
               </Stack>
-            ))}
+            )}
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
+        <DialogActions
+          sx={{
+            flexShrink: 0,
+            flexWrap: 'wrap',
+            gap: 1,
+            px: '20px',
+            py: '16px',
+            pb: { xs: 'calc(16px + env(safe-area-inset-bottom))', sm: '16px' },
+            borderTop: 1,
+            borderColor: 'divider',
+            backgroundColor: 'background.paper',
+          }}
+        >
           <Button onClick={() => setGenerateOpen(false)} disabled={draftsPending}>Cancel</Button>
           {drafts.length === 0 ? (
             <Button

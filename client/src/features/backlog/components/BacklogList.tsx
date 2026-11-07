@@ -47,7 +47,7 @@ export default function BacklogList({
       <Stack
         ref={setNodeRef}
         data-drop-list={listId}
-        spacing={compact ? 0 : 1.5}
+        spacing={0}
         sx={{
           minHeight: 8,
           borderRadius: 1,
@@ -76,6 +76,9 @@ export default function BacklogList({
               canMoveUp={isDraggable && index > 0}
               canMoveDown={isDraggable && index < orderedList.length - 1}
               compact={compact}
+              roundBottomCorners={
+                listId !== 'backlog' && todo.id === orderedTodos[orderedTodos.length - 1]?.id
+              }
             />
           );
         })}

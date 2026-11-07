@@ -73,7 +73,18 @@ export default function SprintSection({
   return (
     <Paper
       variant="outlined"
-      sx={{ mb: 2, overflow: "hidden", borderRadius: 2 }}
+      className="sprint-container"
+      sx={{
+        mb: 2,
+        overflow: "hidden !important",
+        borderRadius: 2,
+        '& [data-drop-list] > .MuiPaper-root:last-child': {
+          borderBottomLeftRadius: '20px !important',
+          borderBottomRightRadius: '20px !important',
+          borderTopLeftRadius: '0 !important',
+          borderTopRightRadius: '0 !important',
+        },
+      }}
     >
       <Stack
         direction={{ xs: "column", sm: "row" }}
@@ -181,7 +192,13 @@ export default function SprintSection({
       </Stack>
 
       <Collapse in={expanded}>
-        <Box>
+        <Box
+          sx={{
+            overflow: "hidden",
+            borderBottomLeftRadius: 2,
+            borderBottomRightRadius: 2,
+          }}
+        >
           <BacklogList
             todos={[...todos].sort((a, b) => a.order - b.order)}
             onTodoClick={onTodoClick}

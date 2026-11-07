@@ -39,6 +39,7 @@ interface BacklogItemProps {
   canMoveUp: boolean;
   canMoveDown: boolean;
   compact: boolean;
+  roundBottomCorners: boolean;
 }
 
 export default function BacklogItem({
@@ -53,6 +54,7 @@ export default function BacklogItem({
   canMoveUp,
   canMoveDown,
   compact,
+  roundBottomCorners,
 }: BacklogItemProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -95,7 +97,11 @@ export default function BacklogItem({
         transform: CSS.Transform.toString(transform),
         opacity: isDragging ? 0.45 : 1,
         p: compact ? { xs: 1, md: 0.75 } : 2,
-        borderRadius: compact ? 0 : 2,
+        borderRadius: 0,
+        ...(roundBottomCorners && {
+          borderBottomLeftRadius: 2,
+          borderBottomRightRadius: 2,
+        }),
         borderLeft: compact ? 0 : undefined,
         borderRight: compact ? 0 : undefined,
         borderTop: compact ? 0 : undefined,

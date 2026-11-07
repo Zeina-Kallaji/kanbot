@@ -23,6 +23,8 @@ const colors = {
     mainBg: "#ecf1fa",
     surface: "#FFFFFF",
     surfaceSecondary: "#F9FAFD",
+    todoCard: "#ECF1FA",
+    todoCardBorder: "#D3DEF0",
     border: "#E5EAF2",
     borderStrong: "#D5DCE8",
     textMain: "#202B3C",
