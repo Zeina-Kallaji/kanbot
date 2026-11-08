@@ -474,9 +474,19 @@ export default function BacklogPage() {
         )}
 
       <Stack
-        direction={{ xs: 'column', lg: 'row' }}
-        spacing={1.5}
-        sx={{ alignItems: { xs: 'stretch', lg: 'center' }, mb: { xs: 2, md: 3 }, minWidth: 0 }}
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 1.5,
+          flexWrap: 'nowrap',
+          mb: { xs: 2, md: 3 },
+          minWidth: 0,
+          width: '100%',
+          '@media (max-width: 1320px)': {
+            flexWrap: 'wrap',
+          },
+        }}
       >
         <TodoFilters
           search={search}
@@ -487,38 +497,64 @@ export default function BacklogPage() {
           onTypeChange={setType}
         />
         <Box
+          aria-hidden="true"
           sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(3, auto)' },
-            justifyContent: { sm: 'start', lg: 'end' },
-            width: { xs: '100%', lg: 'auto' },
-            gap: 1,
-            flexShrink: 0,
-            '& .MuiButton-root': { whiteSpace: 'nowrap' },
+            display: 'none',
+            '@media (max-width: 1320px)': {
+              display: 'block',
+              flex: '0 0 100%',
+              height: 0,
+            },
+          }}
+        />
+        <Button
+          variant="outlined"
+          startIcon={<AutoAwesomeOutlined />}
+          onClick={assistantActions.openGenerateTodos}
+          sx={{
+            flex: '0 0 auto',
+            whiteSpace: 'nowrap',
+            '@media (max-width: 1320px)': {
+              flex: '1 1 0',
+              minWidth: 0,
+              whiteSpace: 'normal',
+            },
           }}
         >
-          <Button
-            variant="outlined"
-            startIcon={<AutoAwesomeOutlined />}
-            onClick={assistantActions.openGenerateTodos}
-          >
-            Generate todos with AI
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<BoltOutlined />}
-            onClick={assistantActions.openPlanSprint}
-          >
-            Plan sprint with AI
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddOutlined />}
-            onClick={() => openSprintDialog('create')}
-          >
-            Create sprint
-          </Button>
-        </Box>
+          Generate todos with AI
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<BoltOutlined />}
+          onClick={assistantActions.openPlanSprint}
+          sx={{
+            flex: '0 0 auto',
+            whiteSpace: 'nowrap',
+            '@media (max-width: 1320px)': {
+              flex: '1 1 0',
+              minWidth: 0,
+              whiteSpace: 'normal',
+            },
+          }}
+        >
+          Plan sprint with AI
+        </Button>
+        <Button
+          variant="contained"
+          startIcon={<AddOutlined />}
+          onClick={() => openSprintDialog('create')}
+          sx={{
+            flex: '0 0 auto',
+            whiteSpace: 'nowrap',
+            '@media (max-width: 1320px)': {
+              flex: '1 1 0',
+              minWidth: 0,
+              whiteSpace: 'normal',
+            },
+          }}
+        >
+          Create sprint
+        </Button>
       </Stack>
 
       {filtersActive && (

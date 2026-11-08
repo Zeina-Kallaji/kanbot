@@ -178,14 +178,12 @@ export default function SprintsPage() {
             All sprints
           </Typography>
 
-          {/* Below lg: a swipeable row of sprint cards; lg+: vertical list. */}
-          <Stack
-            direction={{ xs: 'row', lg: 'column' }}
+          <Box
             sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
               gap: 1.5,
-              overflowX: { xs: 'auto', lg: 'visible' },
-              pb: { xs: 1, lg: 0 },
-              '& > .MuiPaper-root': { flex: { xs: '0 0 220px', lg: '0 0 auto' } },
+              minWidth: 0,
             }}
           >
             {sprints.map((sprint) => {
@@ -236,7 +234,7 @@ export default function SprintsPage() {
                 </Paper>
               );
             })}
-          </Stack>
+          </Box>
         </Paper>
 
         <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
@@ -310,20 +308,24 @@ export default function SprintsPage() {
                           sx={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'center',
-                            flexWrap: 'wrap',
-                            gap: 2,
+                            alignItems: 'flex-start',
+                            flexWrap: 'nowrap',
+                            gap: 1,
                             p: 1,
                             borderRadius: 1,
                             border: '1px solid',
                             borderColor: 'divider',
                           }}
                         >
-                          <Box>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>
                               {todo.key}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ overflowWrap: 'anywhere' }}
+                            >
                               {todo.title}
                             </Typography>
                             <TodoLabels type={todo.type} priority={todo.priority} />
@@ -332,6 +334,7 @@ export default function SprintsPage() {
                             label={todoStatusLabelMap[todo.status]}
                             size="small"
                             variant="outlined"
+                            sx={{ flexShrink: 0, mt: 0.25 }}
                           />
                         </Box>
                       ))

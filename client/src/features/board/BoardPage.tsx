@@ -102,6 +102,9 @@ function BoardColumn({ status, label, count, children }: BoardColumnProps) {
       ref={setNodeRef}
       variant="outlined"
       sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
         p: { xs: 1.5, sm: 2 },
         minWidth: 0,
         overflow: 'hidden',
@@ -470,29 +473,21 @@ export default function BoardPage() {
           collisionDetection={closestCenter}
           onDragEnd={(event) => void handleDragEnd(event)}
         >
-          {/* Below lg the 4 columns scroll sideways (snap per column) instead of
-              stacking into one very long page. From lg up they share the width. */}
           <Box
             tabIndex={0}
             role="region"
             aria-label="Sprint board columns"
             sx={{
               display: 'grid',
-              gridAutoFlow: { xs: 'column', lg: 'row' },
-              gridAutoColumns: {
-                xs: 'minmax(260px, 82%)',
-                sm: 'minmax(280px, 46%)',
-                lg: 'minmax(0, 1fr)',
+              gridTemplateColumns: {
+                xs: 'repeat(1, minmax(0, 1fr))',
+                sm: 'repeat(2, minmax(0, 1fr))',
+                lg: 'repeat(4, minmax(0, 1fr))',
               },
-              gridTemplateColumns: { lg: 'repeat(4, minmax(0, 1fr))' },
+              gridAutoRows: '1fr',
               gap: 1.5,
-              alignItems: 'start',
-              overflowX: { xs: 'auto', lg: 'visible' },
-              scrollSnapType: { xs: 'x proximity', lg: 'none' },
-              overscrollBehaviorX: 'contain',
-              pb: { xs: 1, lg: 0 },
-              mx: { xs: -1, sm: 0 },
-              px: { xs: 1, sm: 0 },
+              alignItems: 'stretch',
+              minWidth: 0,
             }}
           >
             {columns.map(({ status, label }) => (
@@ -502,7 +497,7 @@ export default function BoardPage() {
                 label={label}
                 count={board[status].length}
               >
-                <Stack spacing={2} sx={{ minHeight: 40 }}>
+                <Stack spacing={2} sx={{ flex: 1, minHeight: 200 }}>
                   {board[status].map((todo) => (
                     <BoardTodoCard
                       key={todo.id}

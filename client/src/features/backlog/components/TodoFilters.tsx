@@ -6,7 +6,6 @@ import {
   MenuItem,
   Select,
   TextField,
-  Stack,
 } from '@mui/material';
 
 import type {
@@ -33,26 +32,18 @@ export default function TodoFilters({
   onTypeChange,
 }: TodoFiltersProps) {
   return (
-    <Stack
-      direction="row"
-      sx={{
-        gap: 1.5,
-        flex: 1,
-        minWidth: 0,
-        flexWrap: { xs: 'wrap', md: 'nowrap' },
-      }}
-    >
+    <>
       <TextField
         type="search"
         slotProps={{ htmlInput: { 'aria-label': 'Search todos' } }}
-        sx={{ flex: { xs: '1 1 100%', md: 1 }, minWidth: { md: 200 } }}
+        sx={{ flex: '2 1 0', minWidth: 0 }}
         size="small"
         placeholder="Search todos..."
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
       />
 
-      <FormControl sx={{ flex: { xs: '1 1 0', md: '0 0 auto' }, minWidth: { xs: 120, md: 150 } }} size="small">
+      <FormControl sx={{ flex: '1 1 0', minWidth: 0 }} size="small">
         <InputLabel>Priority</InputLabel>
 
         <Select
@@ -70,7 +61,7 @@ export default function TodoFilters({
         </Select>
       </FormControl>
 
-      <FormControl sx={{ flex: { xs: '1 1 0', md: '0 0 auto' }, minWidth: { xs: 120, md: 130 } }} size="small">
+      <FormControl sx={{ flex: '1 1 0', minWidth: 0 }} size="small">
         <InputLabel>Type</InputLabel>
 
         <Select
@@ -86,6 +77,6 @@ export default function TodoFilters({
           <MenuItem value="bug">Bug</MenuItem>
         </Select>
       </FormControl>
-    </Stack>
+    </>
   );
 }
