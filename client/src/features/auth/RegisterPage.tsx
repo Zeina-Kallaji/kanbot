@@ -129,127 +129,117 @@ export default function RegisterPage() {
       }}
     >
       <Container maxWidth="xs">
-        <Stack spacing={3} sx={{ alignItems: "center" }}>
-          {/* Logo */}
-          <Box sx={{ mb: 2 }}>
-            <Box
-              component="img"
-              src="/kanbot-logo.svg"
-              alt="Kanbot"
-              sx={{
-                height: 48,
-                mb: 1,
-                display: 'block',
-                mx: 'auto',
-              }}
-            />
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ textAlign: "center", mt: 1 }}
-            >
-              Your sprint board with an AI teammate
+        <Paper
+          elevation={2}
+          sx={{
+            width: '100%',
+            p: { xs: 2.5, sm: 4 },
+            borderRadius: 2,
+          }}
+        >
+          <Box
+            component="img"
+            src="/kanbot-logo-tagline.svg"
+            alt="Kanbot — Your sprint board with an AI teammate"
+            sx={{
+              display: 'block',
+              width: '100%',
+              maxWidth: 230,
+              height: 'auto',
+              mx: 'auto',
+              mb: 2,
+            }}
+          />
+
+          <Typography variant="h2" sx={{ mb: 3, textAlign: 'center' }}>
+            Create your account
+          </Typography>
+
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            <Stack spacing={2.5}>
+              {/* Name Field */}
+              <TextField
+                label="Name"
+                type="text"
+                autoComplete="name"
+                autoFocus
+                fullWidth
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                {...register('name')}
+                disabled={isLoading}
+              />
+
+              {/* Email Field */}
+              <TextField
+                label="Email"
+                type="email"
+                autoComplete="email"
+                fullWidth
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                {...register('email')}
+                disabled={isLoading}
+              />
+
+              {/* Password Field */}
+              <TextField
+                label="Password"
+                type="password"
+                autoComplete="new-password"
+                fullWidth
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                {...register('password')}
+                disabled={isLoading}
+              />
+
+              {/* Confirm Password Field */}
+              <TextField
+                label="Confirm Password"
+                type="password"
+                autoComplete="new-password"
+                fullWidth
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+                {...register('confirmPassword')}
+                disabled={isLoading}
+              />
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                disabled={isLoading}
+                sx={{ mt: 1 }}
+              >
+                {isLoading ? 'Creating account...' : 'Create account'}
+              </Button>
+            </Stack>
+          </form>
+
+          {/* Login Link */}
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Already have an account?{' '}
+              <Link
+                component={RouterLink}
+                to="/login"
+                sx={{
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                Log in
+              </Link>
             </Typography>
           </Box>
-
-          <Paper
-            elevation={2}
-            sx={{
-              width: '100%',
-              p: { xs: 2.5, sm: 4 },
-              borderRadius: 2,
-            }}
-          >
-            <Typography variant="h2" sx={{ mb: 3, textAlign: 'center' }}>
-              Create your account
-            </Typography>
-
-            <form onSubmit={handleSubmit(onSubmit)} noValidate>
-              <Stack spacing={2.5}>
-                {/* Name Field */}
-                <TextField
-                  label="Name"
-                  type="text"
-                  autoComplete="name"
-                  autoFocus
-                  fullWidth
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
-                  {...register('name')}
-                  disabled={isLoading}
-                />
-
-                {/* Email Field */}
-                <TextField
-                  label="Email"
-                  type="email"
-                  autoComplete="email"
-                  fullWidth
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                  {...register('email')}
-                  disabled={isLoading}
-                />
-
-                {/* Password Field */}
-                <TextField
-                  label="Password"
-                  type="password"
-                  autoComplete="new-password"
-                  fullWidth
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                  {...register('password')}
-                  disabled={isLoading}
-                />
-
-                {/* Confirm Password Field */}
-                <TextField
-                  label="Confirm Password"
-                  type="password"
-                  autoComplete="new-password"
-                  fullWidth
-                  error={!!errors.confirmPassword}
-                  helperText={errors.confirmPassword?.message}
-                  {...register('confirmPassword')}
-                  disabled={isLoading}
-                />
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  disabled={isLoading}
-                  sx={{ mt: 1 }}
-                >
-                  {isLoading ? 'Creating account...' : 'Create account'}
-                </Button>
-              </Stack>
-            </form>
-
-            {/* Login Link */}
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                Already have an account?{' '}
-                <Link
-                  component={RouterLink}
-                  to="/login"
-                  sx={{
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                    '&:hover': {
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  Log in
-                </Link>
-              </Typography>
-            </Box>
-          </Paper>
-        </Stack>
+        </Paper>
       </Container>
     </Box>
   );
