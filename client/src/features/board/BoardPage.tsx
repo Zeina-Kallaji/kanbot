@@ -35,6 +35,7 @@ import {
   ArrowBackOutlined,
   AutoAwesomeOutlined,
   CheckCircleOutlined,
+  DragIndicator,
   ReplayOutlined,
 } from '@mui/icons-material';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
@@ -153,22 +154,28 @@ function BoardTodoCard({ todo, onClick }: BoardTodoCardProps) {
       sx={{
         minWidth: 0,
         cursor: isDragging ? 'grabbing' : 'grab',
-        touchAction: 'manipulation',
+        touchAction: 'none',
         opacity: isDragging ? 0.45 : 1,
         transform: CSS.Translate.toString(transform),
       }}
     >
-      <CardContent sx={{ p: '12px !important' }}>
-        <Typography variant="caption" color="text.secondary">
-          {todo.key}
-        </Typography>
-        <Typography sx={{ my: 0.5, fontWeight: 600, overflowWrap: 'anywhere' }}>
-          {todo.title}
-        </Typography>
-        <Stack direction="row" spacing={0.6} sx={{ flexWrap: 'wrap', gap: 1.75 }}>
-          <TodoLabels type={todo.type} priority={todo.priority} />
-          <Chip size="small" label={`${todo.storyPoints ?? 0} pts`} variant="outlined" />
-        </Stack>
+      <CardContent sx={{ p: '12px !important', display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+        <DragIndicator
+          aria-hidden="true"
+          sx={{ color: 'text.disabled', flexShrink: 0, mt: 0.25 }}
+        />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="caption" color="text.secondary">
+            {todo.key}
+          </Typography>
+          <Typography sx={{ my: 0.5, fontWeight: 600, overflowWrap: 'anywhere' }}>
+            {todo.title}
+          </Typography>
+          <Stack direction="row" spacing={0.6} sx={{ flexWrap: 'wrap', gap: 1.75 }}>
+            <TodoLabels type={todo.type} priority={todo.priority} />
+            <Chip size="small" label={`${todo.storyPoints ?? 0} pts`} variant="outlined" />
+          </Stack>
+        </Box>
       </CardContent>
     </Card>
   );

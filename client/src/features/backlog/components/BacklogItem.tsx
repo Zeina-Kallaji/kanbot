@@ -18,6 +18,7 @@ import {
   MoreVertOutlined,
   ArrowUpwardOutlined,
   ArrowDownwardOutlined,
+  DragIndicator,
   DeleteOutlineOutlined,
 } from '@mui/icons-material';
 import { useSortable } from '@dnd-kit/sortable';
@@ -167,6 +168,10 @@ export default function BacklogItem({
           {...attributes}
           {...listeners}
         >
+          <DragIndicator
+            aria-hidden="true"
+            sx={{ color: 'text.disabled', flexShrink: 0 }}
+          />
           <Typography
             variant="body2"
             color="text.secondary"
