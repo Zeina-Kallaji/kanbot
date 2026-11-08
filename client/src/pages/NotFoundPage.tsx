@@ -1,6 +1,7 @@
 import { Box, Button, Container, Typography, Stack } from '@mui/material';
 import { Home, SearchOff } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import { FloatingThemeToggle } from '../components/ThemeToggle';
 
 /**
  * NotFoundPage Component
@@ -18,6 +19,7 @@ export default function NotFoundPage() {
         bgcolor: 'background.default',
       }}
     >
+      <FloatingThemeToggle />
       <Container maxWidth="sm">
         <Stack spacing={3} sx={{ alignItems: "center", textAlign: "center" }}>
           <SearchOff

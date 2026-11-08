@@ -16,6 +16,8 @@ import {
 import { useAuth } from './AuthContext';
 import { register as apiRegister } from '../../api/auth';
 import { ApiError, fieldErrors } from '../../api/client';
+import { FloatingThemeToggle } from '../../components/ThemeToggle';
+import { useThemeMode } from '../../theme/useThemeMode';
 
 /**
  * Register Form Validation Schema
@@ -57,6 +59,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
  */
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const { mode } = useThemeMode();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
@@ -128,6 +131,7 @@ export default function RegisterPage() {
         py: { xs: 3, sm: 8 },
       }}
     >
+      <FloatingThemeToggle />
       <Container maxWidth="xs">
         <Paper
           elevation={2}
@@ -139,7 +143,11 @@ export default function RegisterPage() {
         >
           <Box
             component="img"
-            src="/kanbot-logo-tagline.svg"
+            src={
+              mode === 'dark'
+                ? '/kanbot-logo-tagline-dark.svg'
+                : '/kanbot-logo-tagline.svg'
+            }
             alt="Kanbot — Your sprint board with an AI teammate"
             sx={{
               display: 'block',

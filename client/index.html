@@ -4,7 +4,27 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ecf1fa" />
     <title>client</title>
+    <script>
+      try {
+        const savedMode = localStorage.getItem('kanbot_theme_mode');
+        const mode =
+          savedMode === 'light' || savedMode === 'dark'
+            ? savedMode
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+        document.documentElement.dataset.theme = mode;
+        document.documentElement.style.colorScheme = mode;
+        document.documentElement.style.backgroundColor =
+          mode === 'dark' ? '#0F1623' : '#ecf1fa';
+      } catch {
+        document.documentElement.dataset.theme = 'light';
+        document.documentElement.style.colorScheme = 'light';
+        document.documentElement.style.backgroundColor = '#ecf1fa';
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

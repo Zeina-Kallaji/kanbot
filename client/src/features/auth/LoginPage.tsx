@@ -17,6 +17,8 @@ import {
 import { useAuth } from './AuthContext';
 import { login as apiLogin } from '../../api/auth';
 import { ApiError } from '../../api/client';
+import { FloatingThemeToggle } from '../../components/ThemeToggle';
+import { useThemeMode } from '../../theme/useThemeMode';
 
 /**
  * Login Form Validation Schema
@@ -48,6 +50,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [serverError, setServerError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const { mode } = useThemeMode();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -96,6 +99,7 @@ export default function LoginPage() {
         py: { xs: 3, sm: 8 },
       }}
     >
+      <FloatingThemeToggle />
       <Container maxWidth="xs">
         <Paper
           elevation={2}
@@ -107,7 +111,11 @@ export default function LoginPage() {
         >
           <Box
             component="img"
-            src="/kanbot-logo-tagline.svg"
+            src={
+              mode === 'dark'
+                ? '/kanbot-logo-tagline-dark.svg'
+                : '/kanbot-logo-tagline.svg'
+            }
             alt="Kanbot — Your sprint board with an AI teammate"
             sx={{
               display: 'block',

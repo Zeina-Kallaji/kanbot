@@ -3,6 +3,7 @@
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { AutoAwesomeOutlined } from '@mui/icons-material';
 import FolderOpen from '@mui/icons-material/FolderOpen';
+import ThemeToggle from '../../../components/ThemeToggle';
 import {
   pageHeaderButtonSx,
   pageHeaderContentSx,
@@ -45,15 +46,21 @@ export default function BacklogHeader({
               {totalTasks} todos · {totalPoints} pts
             </Typography>
           </Stack>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<AutoAwesomeOutlined />}
-            onClick={onAskAI}
-            sx={pageHeaderButtonSx}
-          >
-            Ask AI
-          </Button>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <ThemeToggle
+              variant="onHeader"
+              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+            />
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<AutoAwesomeOutlined />}
+              onClick={onAskAI}
+              sx={pageHeaderButtonSx}
+            >
+              Ask AI
+            </Button>
+          </Stack>
         </Box>
       </Container>
     </Box>

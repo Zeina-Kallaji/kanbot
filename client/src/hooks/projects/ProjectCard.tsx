@@ -14,6 +14,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  useTheme,
 } from "@mui/material";
 
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -28,7 +29,6 @@ import { ProjectFormDialog } from "./ProjectFormDialog";
 import ConfirmDialog from "../../components/ConfirmDialog";
 
 import { useDeleteProject } from "../../hooks/projects/useDeleteProject";
-import { colors } from "../../theme/theme";
 
 interface ProjectCardProps {
   project: ProjectWithStats;
@@ -36,6 +36,7 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project }: ProjectCardProps) {
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -66,7 +67,11 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           cursor: "pointer",
           transition: "all 0.2s",
           "&:hover": {
-            boxShadow: 3,
+            boxShadow: theme.palette.mode === "dark" ? "none" : 3,
+            borderColor:
+              theme.palette.mode === "dark"
+                ? "primary.light"
+                : theme.palette.divider,
             transform: "translateY(-2px)",
           },
         }}
@@ -88,8 +93,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               label={project.key}
               size="small"
               sx={{
-                bgcolor: colors.primary.main,
-                color: "white",
+                bgcolor: "primary.main",
+                color: "primary.contrastText",
                 fontWeight: 600,
                 fontSize: "0.75rem",
               }}

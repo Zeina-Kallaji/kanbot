@@ -11,6 +11,39 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Keep these CSS colors in sync with the light and dark palettes in theme.ts. */
+:root {
+  color-scheme: light;
+  --app-bg: #ecf1fa;
+  --text-primary: #202b3c;
+  --heading-color: #202b3c;
+  --link-color: #3156a3;
+  --link-hover: #294a91;
+  --focus-color: #3156a3;
+  --scrollbar-track: #ecf1fa;
+  --scrollbar-thumb: #d5dce8;
+  --scrollbar-thumb-hover: #98a2b3;
+  --selection-bg: #eaf0ff;
+  --selection-text: #202b3c;
+  --skip-link-bg: #3156a3;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --app-bg: #0f1623;
+  --text-primary: #e6eaf2;
+  --heading-color: #e6eaf2;
+  --link-color: #8fb0ff;
+  --link-hover: #b3caff;
+  --focus-color: #8fb0ff;
+  --scrollbar-track: #0f1623;
+  --scrollbar-thumb: #34435f;
+  --scrollbar-thumb-hover: #7c889e;
+  --selection-bg: #22305a;
+  --selection-text: #e6eaf2;
+  --skip-link-bg: #6f93e6;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* CSS Reset & Base Styles */
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -42,10 +75,11 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  background-color: #F6F8FC;
-  color: #202B3C;
+  background-color: var(--app-bg);
+  color: var(--text-primary);
   line-height: 1.5;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -71,7 +105,7 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
   font-weight: 600;
   line-height: 1.3;
-  color: #202B3C;
+  color: var(--heading-color);
 }
 
 p {
@@ -79,13 +113,13 @@ p {
 }
 
 a {
-  color: #3156A3;
+  color: var(--link-color);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #294A91;
+  color: var(--link-hover);
   text-decoration: underline;
 }
 
@@ -103,7 +137,7 @@ button {
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 *:focus-visible {
-  outline: 2px solid #3156A3;
+  outline: 2px solid var(--focus-color);
   outline-offset: 2px;
 }
 
@@ -122,16 +156,16 @@ button {
 }
 
 ::-webkit-scrollbar-track {
-  background: #F6F8FC;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D5DCE8;
+  background: var(--scrollbar-thumb);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #98A2B3;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -139,8 +173,8 @@ button {
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 ::selection {
-  background-color: #EAF0FF;
-  color: #202B3C;
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -176,12 +210,18 @@ button {
   position: absolute;
   top: -40px;
   left: 0;
-  background: #3156A3;
+  background: var(--skip-link-bg);
   color: white;
   padding: 8px 16px;
   text-decoration: none;
   z-index: 10000;
   border-radius: 0 0 4px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
 }
 
 .skip-to-main:focus {

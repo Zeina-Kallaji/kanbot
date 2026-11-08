@@ -32,8 +32,9 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../features/auth/AuthContext';
 import { useProjects } from '../hooks/projects/useProjects';
-import { colors } from '../theme/theme';
+import { useThemeMode } from '../theme/useThemeMode';
 import TopBar from '../components/layout/TopBar';
+import ThemeToggle from '../components/ThemeToggle';
 import AssistantDrawer, { type AssistantDrawerHandle } from '../features/ai/AssistantDrawer';
 import { AssistantContext } from '../features/ai/AssistantContext';
 
@@ -62,6 +63,7 @@ export default function AppLayout() {
   const [assistantOpen, setAssistantOpen] = useState(false);
   const assistantRef = useRef<AssistantDrawerHandle>(null);
   const theme = useTheme();
+  const { mode } = useThemeMode();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {
     data,
@@ -149,7 +151,11 @@ export default function AppLayout() {
       </IconButton>
       <Box
         component="img"
-        src="/kanbot-logo.svg"
+        src={
+          mode === 'dark'
+            ? '/kanbot-logo-tagline-dark.svg'
+            : '/kanbot-logo.svg'
+        }
         alt="Kanbot"
         sx={{
           display: 'block',
@@ -159,6 +165,8 @@ export default function AppLayout() {
           ml: 1,
         }}
       />
+      <Box sx={{ flex: 1 }} />
+      <ThemeToggle />
     </Box>
   ) : null;
 
@@ -316,17 +324,17 @@ export default function AppLayout() {
                     color: selected ? 'primary.main' : 'text.secondary',
                     bgcolor: 'transparent',
                     '&.Mui-selected': {
-                      bgcolor: '#EAF0FF',
+                      bgcolor: 'custom.primarySoft',
                       color: 'primary.main',
                       '& .MuiListItemIcon-root': {
                         color: 'primary.main',
                       },
                       '&:hover': {
-                        bgcolor: '#E0E7FF',
+                        bgcolor: 'custom.primarySoftHover',
                       },
                     },
                     '&:hover': {
-                      bgcolor: 'rgba(0, 0, 0, 0.04)',
+                      bgcolor: 'action.hover',
                     },
                   }}
                 >
@@ -370,7 +378,7 @@ export default function AppLayout() {
                 mt: 0.5,
                 borderRadius: 1.5,
                 '&.Mui-selected': {
-                  bgcolor: colors.primary.soft,
+                  bgcolor: 'custom.primarySoft',
                   color: 'primary.main',
                 },
               }}
@@ -421,11 +429,11 @@ export default function AppLayout() {
                     py: 0.75,
                     borderRadius: 1.5,
                     '&.Mui-selected': {
-                      bgcolor: colors.primary.soft,
+                      bgcolor: 'custom.primarySoft',
                       color: 'primary.main',
                     },
                     '&.Mui-selected:hover': {
-                      bgcolor: colors.primary.soft,
+                      bgcolor: 'custom.primarySoft',
                     },
                   }}
                 >

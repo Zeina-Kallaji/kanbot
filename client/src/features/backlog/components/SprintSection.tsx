@@ -95,7 +95,7 @@ export default function SprintSection({
           minHeight: 40,
           px: { xs: 1, sm: 1.5 },
           py: 0.75,
-          bgcolor: "#b9c9ee",
+          bgcolor: "custom.sectionHeader",
         }}
       >
         <Stack

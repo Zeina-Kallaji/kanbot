@@ -12,6 +12,7 @@ import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import FolderCopyIcon from '@mui/icons-material/FolderCopy';
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
+import ThemeToggle from '../ThemeToggle';
 import {
   pageHeaderButtonSx,
   pageHeaderIconSx,
@@ -63,16 +64,22 @@ export default function TopBar({ onAskAI, disabled = false }: Props) {
         </Typography>
       </Stack>
 
-      <Button
-        variant="outlined"
-        size="small"
-        startIcon={<AutoAwesomeOutlinedIcon />}
-        onClick={onAskAI}
-        disabled={disabled}
-        sx={{ ...pageHeaderButtonSx, minWidth: 0 }}
-      >
-        Ask AI
-      </Button>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+        <ThemeToggle
+          variant="onHeader"
+          sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+        />
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<AutoAwesomeOutlinedIcon />}
+          onClick={onAskAI}
+          disabled={disabled}
+          sx={{ ...pageHeaderButtonSx, minWidth: 0 }}
+        >
+          Ask AI
+        </Button>
+      </Stack>
     </>
   );
 

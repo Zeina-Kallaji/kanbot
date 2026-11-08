@@ -213,11 +213,11 @@ export default function SprintsPage() {
                       color={sprint.status === 'active' ? statusColorMap.active : undefined}
                       sx={{
                         ...(sprint.status === 'planned' && {
-                          backgroundColor: '#607cbd',
-                          color: '#FFFFFF',
+                          backgroundColor: 'custom.sprintSelected',
+                          color: 'common.white',
                         }),
                         ...(sprint.status === 'completed' && {
-                          backgroundColor: '#c6d8fa',
+                          backgroundColor: 'custom.sprintMuted',
                           color: 'text.primary',
                         }),
                       }}
@@ -252,11 +252,17 @@ export default function SprintsPage() {
               color={currentSprint.status === 'active' ? statusColorMap.active : undefined}
               sx={{
                 ...(currentSprint.status === 'planned' && {
-                  backgroundColor: '#5578C7',
-                  color: '#FFFFFF',
+                  backgroundColor: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.main
+                      : theme.palette.primary.light,
+                  color: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.contrastText
+                      : theme.palette.common.white,
                 }),
                 ...(currentSprint.status === 'completed' && {
-                  backgroundColor: '#ECF1FA',
+                  backgroundColor: 'custom.todoCard',
                   color: 'text.primary',
                 }),
               }}
@@ -271,7 +277,7 @@ export default function SprintsPage() {
               { label: 'Completion %', value: `${stats.completion}%` },
             ].map((item) => (
               <Grid key={item.label} size={{ xs: 6, lg: 3 }}>
-                <Paper variant="outlined" sx={{ p: { xs: 1.25, sm: 2 }, textAlign: 'center', height: '100%', backgroundColor: '#B9C9EE' }}>
+                <Paper variant="outlined" sx={{ p: { xs: 1.25, sm: 2 }, textAlign: 'center', height: '100%', backgroundColor: 'custom.sectionHeader' }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     {item.label}
                   </Typography>

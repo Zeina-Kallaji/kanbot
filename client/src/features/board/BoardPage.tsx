@@ -446,7 +446,7 @@ export default function BoardPage() {
                   size="small"
                   startIcon={<CheckCircleOutlined />}
                   onClick={() => setCompleteDialogOpen(true)}
-                  sx={{ ...pageHeaderButtonSx, whiteSpace: 'nowrap', color: '#fff' }}
+                  sx={{ ...pageHeaderButtonSx, whiteSpace: 'nowrap', color: 'common.white' }}
                 >
                   Complete sprint
                 </Button>

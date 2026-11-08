@@ -602,7 +602,7 @@ export default function BacklogPage() {
               minHeight: 49.35,
               px: { xs: 1, sm: 1.5 },
               py: 0.75,
-              bgcolor: '#b9c9ee',
+              bgcolor: 'custom.sectionHeader',
             }}
           >
             <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', minWidth: 0 }}>

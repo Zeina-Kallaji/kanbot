@@ -12,6 +12,7 @@ import {
   pageHeaderTitleSx,
 } from '../../components/layout/pageHeaderStyles';
 import ProjectCard from '../../hooks/projects/ProjectCard';
+import ThemeToggle from '../../components/ThemeToggle';
 import { ProjectFormDialog } from '../../hooks/projects/ProjectFormDialog';
 import { useProjects } from '../../hooks/projects/useProjects';
 
@@ -88,14 +89,20 @@ export default function ProjectsPage() {
                 </Typography>
               )}
             </Box>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={handleCreateClick}
-              sx={pageHeaderButtonSx}
-            >
-              New Project
-            </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ThemeToggle
+                variant="onHeader"
+                sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+              />
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleCreateClick}
+                sx={pageHeaderButtonSx}
+              >
+                New Project
+              </Button>
+            </Box>
           </Box>
         </Container>
       </Box>

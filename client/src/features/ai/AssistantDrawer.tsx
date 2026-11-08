@@ -57,7 +57,6 @@ import { useSprintMutations } from '../../hooks/sprints/useSprintMutations';
 import { sprintKeys } from '../../hooks/sprints/sprintKeys';
 import { todoKeys } from '../../hooks/todos/todoKeys';
 import { projectKeys } from '../../hooks/projects/projectKeys';
-import { colors } from '../../theme/theme';
 
 interface AssistantDrawerProps {
   projectId: string;
@@ -93,7 +92,7 @@ const planFieldSx = {
       borderColor: 'text.secondary',
     },
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#2c5282',
+      borderColor: 'primary.main',
       borderWidth: 2,
     },
   },
@@ -102,7 +101,7 @@ const planFieldSx = {
     color: 'text.secondary',
   },
   '& .MuiInputLabel-root.Mui-focused': {
-    color: '#2c5282',
+    color: 'primary.main',
   },
 };
 
@@ -419,7 +418,7 @@ function AssistantDrawer({
         <Box sx={{ px: 2, pt: 1.5, pb: 1 }}>
           <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-              <SmartToy sx={{ fontSize: 24, color: '#2d4e94', flexShrink: 0 }} />
+              <SmartToy sx={{ fontSize: 24, color: 'primary.main', flexShrink: 0 }} />
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 Kanbot Assistant
               </Typography>
@@ -704,7 +703,7 @@ function AssistantDrawer({
                 overflow: 'visible',
                 '& .MuiOutlinedInput-root': {
                   overflow: 'visible',
-                  backgroundColor: colors.neutral.surface,
+                  backgroundColor: 'background.paper',
                 },
                 '& .MuiOutlinedInput-notchedOutline legend': {
                   height: '14px',
@@ -731,7 +730,7 @@ function AssistantDrawer({
                 maxWidth: '100%',
                 alignSelf: 'flex-start',
                 '& .MuiOutlinedInput-root': {
-                  backgroundColor: colors.neutral.surface,
+                  backgroundColor: 'background.paper',
                 },
               }}
             />
@@ -755,9 +754,9 @@ function AssistantDrawer({
                       justifyContent: 'center',
                       alignItems: 'start',
                       p: { xs: '16px', sm: '20px' },
-                      backgroundColor: colors.neutral.todoCard,
+                      backgroundColor: 'custom.todoCard',
                       border: '1px solid',
-                      borderColor: colors.neutral.todoCardBorder,
+                      borderColor: 'custom.todoCardBorder',
                       borderRadius: '14px',
                       boxShadow: 'none',
                       opacity: item.selected ? 1 : 0.6,
@@ -809,7 +808,7 @@ function AssistantDrawer({
                         sx={{
                           width: '100%',
                           '& .MuiOutlinedInput-root': {
-                            backgroundColor: colors.neutral.surface,
+                            backgroundColor: 'background.paper',
                           },
                         }}
                       />
@@ -832,7 +831,7 @@ function AssistantDrawer({
                           sx={{
                             minWidth: 0,
                             '& .MuiOutlinedInput-root': {
-                              backgroundColor: colors.neutral.surface,
+                              backgroundColor: 'background.paper',
                             },
                           }}
                         >
@@ -851,7 +850,7 @@ function AssistantDrawer({
                           sx={{
                             minWidth: 0,
                             '& .MuiOutlinedInput-root': {
-                              backgroundColor: colors.neutral.surface,
+                              backgroundColor: 'background.paper',
                             },
                           }}
                         >
@@ -874,7 +873,7 @@ function AssistantDrawer({
                               gridColumn: 'auto',
                             },
                             '& .MuiOutlinedInput-root': {
-                              backgroundColor: colors.neutral.surface,
+                              backgroundColor: 'background.paper',
                             },
                           }}
                         >
